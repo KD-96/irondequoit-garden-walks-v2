@@ -15,17 +15,65 @@ import useGardenStore from '../store/gardenStore';
 const SidePanel = () => {
     const theme = useTheme();
     const [selectedTypes, setSelectedTypes] = React.useState([]);
+    const [selectedGardenId, setSelectedGardenId] = React.useState(null);
+    const gardenRefs = React.useRef({});
 
     const { gardens, fetchGardens } = useGardenStore();
+    const [gardenTypeOptions, setGardenTypeOptions] = React.useState([]);
+    const [filteredGardens, setFilteredGardens] = React.useState([]);
+
+    useEffect(() => {
+        if (selectedGardenId && gardenRefs.current[selectedGardenId]) {
+            gardenRefs.current[selectedGardenId].scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+            });
+        }
+    }, [selectedGardenId]);
 
     useEffect(() => {
         const loadGardens = async () => {
             await fetchGardens();
-            console.log('Fetched Gardens:', useGardenStore.getState().gardens); // ✅ Console print
+
+            const { gardens } = useGardenStore.getState();
+
+            setFilteredGardens(gardens);
+
+            const typeSet = new Set();
+
+            gardens.forEach((garden) => {
+                if (garden.gardenTypes) {
+                    Object.keys(garden.gardenTypes).forEach((key) => {
+                        typeSet.add(key);
+                    });
+                }
+            });
+
+            const uniqueTypes = Array.from(typeSet);
+            console.log('All Garden Type Keys:', uniqueTypes);
+            setGardenTypeOptions(uniqueTypes);
         };
 
         loadGardens();
     }, []);
+
+    const handleFilterApply = () => {
+        const { gardens } = useGardenStore.getState();
+
+        if (selectedTypes.length === 0) {
+            setFilteredGardens(gardens); // No filter applied
+            return;
+        }
+
+        const filtered = gardens.filter((garden) => {
+            if (!garden.gardenTypes) return false;
+
+            // Check if all selected types are marked as "Y"
+            return selectedTypes.every((type) => garden.gardenTypes[type] === 'Y');
+        });
+
+        setFilteredGardens(filtered);
+    };
 
     const handleChange = (event) => {
         const {
@@ -35,7 +83,6 @@ const SidePanel = () => {
     };
 
     return (
-
         <div className='side-panel-content'>
             <Box sx={{ pl: 2, pr: 2 }}>
                 {/* Title */}
@@ -51,7 +98,38 @@ const SidePanel = () => {
                         fullWidth
                         size="small"
                         disablePortal
-                        options={[]} // Replace with real garden name list
+                        options={filteredGardens}
+                        getOptionLabel={(option) =>
+                            option.name
+                                ? `${option.name} (${option.address})`
+                                : `Garden #${option.mapNumber} (${option.address})`
+                        }
+                        filterOptions={(options, state) =>
+                            options.filter((garden) => {
+                                const text = state.inputValue.toLowerCase();
+                                return (
+                                    garden.name?.toLowerCase().includes(text) ||
+                                    garden.address?.toLowerCase().includes(text)
+                                );
+                            })
+                        }
+                        onChange={(event, value) => {
+                            if (value) {
+                                setSelectedGardenId(value.mapNumber);
+                            } else {
+                                setSelectedGardenId(null);
+                            }
+                        }}
+                        renderOption={(props, option) => (
+                            <Box component="li" {...props} sx={{ display: 'flex', flexDirection: 'column', }}>
+                                <Typography variant="body2" fontWeight={600}>
+                                    {option.name || `Garden #${option.mapNumber}`}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                    {option.address}
+                                </Typography>
+                            </Box>
+                        )}
                         renderInput={(params) => <TextField {...params} label="Search Gardens" />}
                     />
                 </Box>
@@ -75,14 +153,14 @@ const SidePanel = () => {
                                 </Box>
                             )}
                         >
-                            {gardenTypes.map((name) => (
+                            {gardenTypeOptions.map((name) => (
                                 <MenuItem key={name} value={name} >
                                     {name}
                                 </MenuItem>
                             ))}
                         </Select>
                     </FormControl>
-                    <IconButton size="small" color="primary">
+                    <IconButton color="primary" onClick={handleFilterApply}>
                         <TuneIcon />
                     </IconButton>
                 </Box>
@@ -91,12 +169,25 @@ const SidePanel = () => {
             <div className='s-p-garden-list'>
                 {/* Garden List */}
                 <List sx={{ bgcolor: 'background.paper', p: 0 }}>
-                    {gardens
+                    {filteredGardens
                         .slice()
                         .sort((a, b) => a.mapNumber - b.mapNumber) // ✅ Sort by mapNumber
                         .map((garden, index) => (
                             <React.Fragment key={garden.id || index}>
-                                <ListItemButton alignItems="flex-start" sx={{ borderRadius: 1 }}>
+                                <ListItemButton alignItems="flex-start"
+                                    ref={(el) => (gardenRefs.current[garden.mapNumber] = el)}
+                                    sx={{
+                                        borderRadius: 1,
+                                        bgcolor: selectedGardenId === garden.mapNumber ? 'primary.light' : 'transparent',
+                                        '&:hover': {
+                                            bgcolor: selectedGardenId === garden.mapNumber ? 'primary.light' : 'action.hover',
+                                        },
+                                    }}
+                                    onClick={() =>
+                                        setSelectedGardenId(
+                                            selectedGardenId === garden.mapNumber ? null : garden.mapNumber
+                                        )
+                                    }>
                                     <ListItemAvatar>
                                         <Avatar>
                                             {garden.mapNumber}
