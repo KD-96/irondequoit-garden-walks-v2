@@ -9,17 +9,8 @@ import {
 import { useTheme } from '@mui/material/styles';
 import TuneIcon from '@mui/icons-material/Tune';
 
-
 import gardenTypes from '../assets/data/GardenTypes';
-import useGardenStore from '../store/garndenStore';
-
-function getStyles(name, selected, theme) {
-    return {
-        fontWeight: selected.includes(name)
-            ? theme.typography.fontWeightMedium
-            : theme.typography.fontWeightRegular,
-    };
-}
+import useGardenStore from '../store/gardenStore';
 
 const SidePanel = () => {
     const theme = useTheme();
@@ -85,7 +76,7 @@ const SidePanel = () => {
                             )}
                         >
                             {gardenTypes.map((name) => (
-                                <MenuItem key={name} value={name} style={getStyles(name, selectedTypes, theme)}>
+                                <MenuItem key={name} value={name} >
                                     {name}
                                 </MenuItem>
                             ))}
@@ -99,25 +90,30 @@ const SidePanel = () => {
 
             <div className='s-p-garden-list'>
                 {/* Garden List */}
-                <List sx={{ bgcolor: 'background.paper', borderRadius: 1 }}>
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => (
-                        <React.Fragment key={item}>
-                            <ListItemButton alignItems="flex-start" sx={{ borderRadius: 2 }}>
-                                <ListItemAvatar>
-                                    <Avatar alt="Garden" src="/static/images/avatar/1.jpg" />
-                                </ListItemAvatar>
-                                <ListItemText
-                                    primary={`Garden Name ${item}`}
-                                    secondary={
-                                        <Typography component="span" variant="body2" color="text.primary">
-                                            Garden Address, Line, Here.
-                                        </Typography>
-                                    }
-                                />
-                            </ListItemButton>
-                            {item !== 10 && <Divider variant="inset" component="li" />}
-                        </React.Fragment>
-                    ))}
+                <List sx={{ bgcolor: 'background.paper', p: 0 }}>
+                    {gardens
+                        .slice()
+                        .sort((a, b) => a.mapNumber - b.mapNumber) // ✅ Sort by mapNumber
+                        .map((garden, index) => (
+                            <React.Fragment key={garden.id || index}>
+                                <ListItemButton alignItems="flex-start" sx={{ borderRadius: 1 }}>
+                                    <ListItemAvatar>
+                                        <Avatar>
+                                            {garden.mapNumber}
+                                        </Avatar>
+                                    </ListItemAvatar>
+                                    <ListItemText
+                                        primary={garden.name || `Garden #${garden.mapNumber}`}
+                                        secondary={
+                                            <Typography component="span" variant="body2" fontSize={12} color="text.primary">
+                                                {garden.address}
+                                            </Typography>
+                                        }
+                                    />
+                                </ListItemButton>
+                                {index !== gardens.length - 1 && <Divider variant="inset" component="li" />}
+                            </React.Fragment>
+                        ))}
                 </List>
             </div>
         </div>
