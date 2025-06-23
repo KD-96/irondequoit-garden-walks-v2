@@ -1,4 +1,6 @@
 import React from 'react';
+import { useEffect } from 'react';
+
 import {
     Typography, Autocomplete, TextField, Box, OutlinedInput,
     InputLabel, MenuItem, FormControl, Select, Chip, IconButton, List,
@@ -7,7 +9,9 @@ import {
 import { useTheme } from '@mui/material/styles';
 import TuneIcon from '@mui/icons-material/Tune';
 
+
 import gardenTypes from '../assets/data/GardenTypes';
+import useGardenStore from '../store/garndenStore';
 
 function getStyles(name, selected, theme) {
     return {
@@ -20,6 +24,17 @@ function getStyles(name, selected, theme) {
 const SidePanel = () => {
     const theme = useTheme();
     const [selectedTypes, setSelectedTypes] = React.useState([]);
+
+    const { gardens, fetchGardens } = useGardenStore();
+
+    useEffect(() => {
+        const loadGardens = async () => {
+            await fetchGardens();
+            console.log('Fetched Gardens:', useGardenStore.getState().gardens); // ✅ Console print
+        };
+
+        loadGardens();
+    }, []);
 
     const handleChange = (event) => {
         const {

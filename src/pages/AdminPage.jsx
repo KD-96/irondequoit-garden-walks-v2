@@ -41,8 +41,7 @@ const AdminPage = () => {
                             mapNumber: mapNumber,
                             address: garden.address || '',
                             zipcode: Number(garden.zipcode) || null,
-                            // latitude: Number(garden.latitude) || null,
-                            // longitude: Number(garden.longitude) || null,
+                            name: garden.name || '',
                             location: new GeoPoint(Number(garden.latitude), Number(garden.longitude)),
                             description: garden.description || '',
                             gardenTypes: {
