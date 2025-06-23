@@ -15,6 +15,7 @@
     "@mui/icons-material": "^7.1.2",
     "@mui/material": "^7.1.2",
     "firebase": "^11.9.1",
+    "framer-motion": "^12.19.1",
     "mapbox-gl": "^3.13.0",
     "papaparse": "^5.5.3",
     "react": "^19.1.0",

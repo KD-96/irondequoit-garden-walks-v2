@@ -12,7 +12,7 @@ import TuneIcon from '@mui/icons-material/Tune';
 import gardenTypes from '../assets/data/GardenTypes';
 import useGardenStore from '../store/gardenStore';
 
-const SidePanel = () => {
+const SidePanel = ({ selectedGarden, setSelectedGarden }) => {
     const theme = useTheme();
     const [selectedTypes, setSelectedTypes] = React.useState([]);
     const [selectedGardenId, setSelectedGardenId] = React.useState(null);
@@ -21,6 +21,14 @@ const SidePanel = () => {
     const { gardens, fetchGardens } = useGardenStore();
     const [gardenTypeOptions, setGardenTypeOptions] = React.useState([]);
     const [filteredGardens, setFilteredGardens] = React.useState([]);
+
+    useEffect(() => {
+        if (selectedGarden === null) {
+            setSelectedGardenId(null);
+        } else {
+            setSelectedGardenId(selectedGarden.mapNumber);
+        }
+    }, [selectedGarden]);
 
     useEffect(() => {
         if (selectedGardenId && gardenRefs.current[selectedGardenId]) {
@@ -116,8 +124,10 @@ const SidePanel = () => {
                         onChange={(event, value) => {
                             if (value) {
                                 setSelectedGardenId(value.mapNumber);
+                                setSelectedGarden(value);
                             } else {
                                 setSelectedGardenId(null);
+                                setSelectedGarden(null);
                             }
                         }}
                         renderOption={(props, option) => (
@@ -167,45 +177,62 @@ const SidePanel = () => {
             </Box>
 
             <div className='s-p-garden-list'>
-                {/* Garden List */}
-                <List sx={{ bgcolor: 'background.paper', p: 0 }}>
-                    {filteredGardens
-                        .slice()
-                        .sort((a, b) => a.mapNumber - b.mapNumber) // ✅ Sort by mapNumber
-                        .map((garden, index) => (
-                            <React.Fragment key={garden.id || index}>
-                                <ListItemButton alignItems="flex-start"
-                                    ref={(el) => (gardenRefs.current[garden.mapNumber] = el)}
-                                    sx={{
-                                        borderRadius: 1,
-                                        bgcolor: selectedGardenId === garden.mapNumber ? 'primary.light' : 'transparent',
-                                        '&:hover': {
-                                            bgcolor: selectedGardenId === garden.mapNumber ? 'primary.light' : 'action.hover',
-                                        },
-                                    }}
-                                    onClick={() =>
-                                        setSelectedGardenId(
-                                            selectedGardenId === garden.mapNumber ? null : garden.mapNumber
-                                        )
-                                    }>
-                                    <ListItemAvatar>
-                                        <Avatar>
-                                            {garden.mapNumber}
-                                        </Avatar>
-                                    </ListItemAvatar>
-                                    <ListItemText
-                                        primary={garden.name || `Garden #${garden.mapNumber}`}
-                                        secondary={
-                                            <Typography component="span" variant="body2" fontSize={12} color="text.primary">
-                                                {garden.address}
-                                            </Typography>
+                {filteredGardens.length === 0 ? (
+                    <Box sx={{ p: 2 }}>
+                        <Typography variant="body2" color="text.secondary" align="center">
+                            No gardens found.
+                        </Typography>
+                    </Box>
+                ) : (
+
+                    <List sx={{ bgcolor: 'background.paper', p: 0 }}>
+                        {filteredGardens
+                            .slice()
+                            .sort((a, b) => a.mapNumber - b.mapNumber) // ✅ Sort by mapNumber
+                            .map((garden, index) => (
+                                <React.Fragment key={garden.id || index}>
+                                    <ListItemButton alignItems="flex-start"
+                                        ref={(el) => (gardenRefs.current[garden.mapNumber] = el)}
+                                        sx={{
+                                            borderRadius: 1,
+                                            bgcolor: selectedGardenId === garden.mapNumber ? 'primary.light' : 'transparent',
+                                            '&:hover': {
+                                                bgcolor: selectedGardenId === garden.mapNumber ? 'primary.light' : 'action.hover',
+                                            },
+                                        }}
+                                        onClick={() => {
+                                            setSelectedGardenId(
+                                                selectedGardenId === garden.mapNumber ? null : garden.mapNumber
+                                            )
+                                            if (selectedGarden?.mapNumber === garden.mapNumber) {
+                                                setSelectedGarden(null); // Deselect
+                                            } else {
+                                                setSelectedGarden(garden); // Select garden
+                                            }
                                         }
-                                    />
-                                </ListItemButton>
-                                {index !== gardens.length - 1 && <Divider variant="inset" component="li" />}
-                            </React.Fragment>
-                        ))}
-                </List>
+                                            // setSelectedGardenId(
+                                            //     selectedGardenId === garden.mapNumber ? null : garden.mapNumber
+                                            // )
+                                        }>
+                                        <ListItemAvatar>
+                                            <Avatar>
+                                                {garden.mapNumber}
+                                            </Avatar>
+                                        </ListItemAvatar>
+                                        <ListItemText
+                                            primary={garden.name || `Garden #${garden.mapNumber}`}
+                                            secondary={
+                                                <Typography component="span" variant="body2" fontSize={12} color="text.primary">
+                                                    {garden.address}
+                                                </Typography>
+                                            }
+                                        />
+                                    </ListItemButton>
+                                    {index !== gardens.length - 1 && <Divider variant="inset" component="li" />}
+                                </React.Fragment>
+                            ))}
+                    </List>
+                )}
             </div>
         </div>
     );
