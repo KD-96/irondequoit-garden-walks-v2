@@ -5,11 +5,11 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoia2FzdW4wMDEiLCJhIjoiY202bms5b2p3MHgwaTJrcTRmazV4a3k2MyJ9.2fPU4RjLDqtvsiEBdAH3Tw';
 
-const MapComponent = () => {
+const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
     const mapContainerRef = useRef(null);
     const mapRef = useRef(null);
     const { gardens, fetchGardens } = useGardenStore();
-
+    const selectedFeatureIdRef = useRef(null);
 
     useEffect(() => {
         if (mapRef.current) return;
@@ -22,14 +22,13 @@ const MapComponent = () => {
         });
 
         mapRef.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-    }, []);
-
-    useEffect(() => {
-        fetchGardens(); // Fetch garden data on mount
+        fetchGardens();
     }, []);
 
     useEffect(() => {
         if (!mapRef.current || !gardens.length) return;
+
+        console.log(selectedGarden);
 
         const map = mapRef.current;
         const popupRef = new mapboxgl.Popup({ closeOnClick: true });
@@ -38,7 +37,10 @@ const MapComponent = () => {
         const handleClick = (e) => {
             const feature = e.features[0];
             const coordinates = feature.geometry.coordinates.slice();
-            const { name } = feature.properties;
+            const { mapNumber } = feature.properties;
+
+            const garden = gardens.find((g) => g.mapNumber === Number(mapNumber));
+            if (!garden) return;
 
             // Zoom to the feature
             map.flyTo({ center: coordinates, zoom: 14 });
@@ -46,12 +48,33 @@ const MapComponent = () => {
             // Show popup
             popupRef
                 .setLngLat(coordinates)
-                .setHTML(`<strong>${name}</strong>`)
+                .setHTML(`<strong>${garden.name || `Garden #${mapNumber}`}</strong>`)
                 .addTo(map);
+
+            // ✅ Set selected garden
+            setSelectedGarden(garden);
+
+            // ✅ Highlight circle filter (if used)
+            if (map.getLayer('selected-garden-circle')) {
+                map.setFilter('selected-garden-circle', ['==', 'mapNumber', mapNumber]);
+            }
         };
 
         // Set listener on circle layer
         map.on('click', 'garden-circles', handleClick);
+
+        map.on('click', (e) => {
+            const features = map.queryRenderedFeatures(e.point, {
+                layers: ['garden-circles'],
+            });
+
+            if (features.length === 0) {
+                selectedFeatureIdRef.current = null;
+                map.setFilter('selected-garden-circle', ['==', 'mapNumber', '']);
+                popupRef.remove();
+            }
+        });
+
 
         // Change cursor style on hover
         map.on('mouseenter', 'garden-circles', () => {
@@ -78,6 +101,24 @@ const MapComponent = () => {
                     },
                 })),
         };
+
+        const sourceExists = map.getSource('gardens');
+        const highlightLayerExists = map.getLayer('selected-garden-circle');
+
+        if (sourceExists && !highlightLayerExists) {
+            map.addLayer({
+                id: 'selected-garden-circle',
+                type: 'circle',
+                source: 'gardens',
+                paint: {
+                    'circle-radius': 16,
+                    'circle-color': '#FFD700',
+                    'circle-stroke-width': 2,
+                    'circle-stroke-color': '#000',
+                },
+                filter: ['==', 'mapNumber', ''],
+            });
+        }
 
         // Add source and layer
         if (mapRef.current.getSource('gardens')) {
@@ -133,7 +174,27 @@ const MapComponent = () => {
             map.off('click', 'garden-circles', handleClick);
             popupRef.remove();
         };
-    }, [gardens]);
+    }, [gardens, selectedGarden]);
+
+    useEffect(() => {
+        if (!mapRef.current) return;
+
+        const map = mapRef.current;
+
+        if (map.getLayer('selected-garden-circle')) {
+            const mapNumber = selectedGarden?.mapNumber ?? '';
+            map.setFilter('selected-garden-circle', ['==', 'mapNumber', mapNumber]);
+        }
+
+        if (selectedGarden?.location?._lat && selectedGarden?.location?._long) {
+            map.flyTo({
+                center: [selectedGarden.location._long, selectedGarden.location._lat],
+                zoom: 14, // You can adjust zoom level
+                speed: 1.2,
+                curve: 1.4,
+            });
+        }
+    }, [selectedGarden]);
 
     return (
         <div ref={mapContainerRef} className="mapbox-map" />

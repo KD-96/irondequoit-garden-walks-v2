@@ -64,6 +64,28 @@
   opacity: 0.5;
 }
 
+.pulse-marker {
+  width: 16px;
+  height: 16px;
+  background: #ffd700;
+  border: 2px solid white;
+  border-radius: 50%;
+  position: relative;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 215, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+  }
+}
+
 /* SIDE PANEL---------------------------------------- */
 .side-panel-content {
   max-width: 450px;

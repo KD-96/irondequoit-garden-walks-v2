@@ -10,7 +10,10 @@ const HomePage = () => {
     return (
         <div className="home-page-container">
             <div className="map-container">
-                <MapComponent />
+                <MapComponent
+                    selectedGarden={selectedGarden}
+                    setSelectedGarden={setSelectedGarden}
+                />
                 <div className="side-panel-container">
                     <SidePanel
                         selectedGarden={selectedGarden}
