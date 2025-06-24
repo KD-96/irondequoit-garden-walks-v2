@@ -42,6 +42,28 @@
   height: 100%;
 }
 
+.garden-marker {
+  width: 28px;
+  height: 28px;
+  background-color: #3e8448;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.garden-marker.marker-small {
+  width: 16px;
+  height: 16px;
+  font-size: 10px;
+  opacity: 0.5;
+}
+
 /* SIDE PANEL---------------------------------------- */
 .side-panel-content {
   max-width: 450px;
