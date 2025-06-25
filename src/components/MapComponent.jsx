@@ -10,6 +10,7 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
     const mapRef = useRef(null);
     const { gardens, fetchGardens } = useGardenStore();
     const selectedFeatureIdRef = useRef(null);
+    const selectedMarkerRef = useRef(null);
 
     useEffect(() => {
         if (mapRef.current) return;
@@ -105,20 +106,7 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
         const sourceExists = map.getSource('gardens');
         const highlightLayerExists = map.getLayer('selected-garden-circle');
 
-        if (sourceExists && !highlightLayerExists) {
-            map.addLayer({
-                id: 'selected-garden-circle',
-                type: 'circle',
-                source: 'gardens',
-                paint: {
-                    'circle-radius': 16,
-                    'circle-color': '#FFD700',
-                    'circle-stroke-width': 2,
-                    'circle-stroke-color': '#000',
-                },
-                filter: ['==', 'mapNumber', ''],
-            });
-        }
+
 
         // Add source and layer
         if (mapRef.current.getSource('gardens')) {
@@ -181,18 +169,43 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
 
         const map = mapRef.current;
 
+        // Update filter on highlight circle layer
         if (map.getLayer('selected-garden-circle')) {
             const mapNumber = selectedGarden?.mapNumber ?? '';
             map.setFilter('selected-garden-circle', ['==', 'mapNumber', mapNumber]);
         }
 
+        // ✅ Check and use lngLat properly
         if (selectedGarden?.location?._lat && selectedGarden?.location?._long) {
+            const lngLat = [selectedGarden.location._long, selectedGarden.location._lat]; // ✅ FIXED: define lngLat here
+
+            // Fly to the selected garden
             map.flyTo({
-                center: [selectedGarden.location._long, selectedGarden.location._lat],
-                zoom: 14, // You can adjust zoom level
+                center: lngLat,
+                zoom: 14,
                 speed: 1.2,
                 curve: 1.4,
             });
+
+            // Remove previous pulsing marker
+            if (selectedMarkerRef.current) {
+                selectedMarkerRef.current.remove();
+            }
+
+            // Create new pulsing dot element
+            const el = document.createElement('div');
+            el.className = 'pulsing-dot';
+
+            // Add the pulsing marker
+            selectedMarkerRef.current = new mapboxgl.Marker({ element: el })
+                .setLngLat(lngLat)
+                .addTo(map);
+        } else {
+            // Remove pulsing marker if deselected
+            if (selectedMarkerRef.current) {
+                selectedMarkerRef.current.remove();
+                selectedMarkerRef.current = null;
+            }
         }
     }, [selectedGarden]);
 
