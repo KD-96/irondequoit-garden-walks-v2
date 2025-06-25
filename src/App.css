@@ -1,5 +1,10 @@
 #root {
   font-family: Poppins, sans-serif;
+
+  --color-1: #333a57;
+  --color-1: #3d4564;
+  --color-2: #a9c094;
+  --color-3: #e3edda;
 }
 
 /* HOME PAGE---------------------------------------- */
@@ -96,7 +101,7 @@
   height: calc(100vh - 200px);
   overflow-y: auto;
   scrollbar-width: thin; /* Firefox */
-  scrollbar-color: #888 transparent; /* Firefox */
+  scrollbar-color: #ffffff95 transparent; /* Firefox */
 }
 
 /* Chrome, Edge, Safari */
@@ -109,10 +114,10 @@
 }
 
 .s-p-garden-list::-webkit-scrollbar-thumb {
-  background-color: #888; /* Scrollbar color */
+  background-color: #ffffff8a; /* Scrollbar color */
   border-radius: 3px; /* Rounded corners */
 }
 
 .s-p-garden-list::-webkit-scrollbar-thumb:hover {
-  background-color: #555; /* Darker on hover */
+  background-color: #ffffff85; /* Darker on hover */
 }

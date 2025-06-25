@@ -95,7 +95,7 @@ const SidePanel = ({ selectedGarden, setSelectedGarden }) => {
             <Box sx={{ pl: 2, pr: 2 }}>
                 {/* Title */}
                 <Box sx={{ mb: 2 }}>
-                    <Typography variant="h5" fontWeight={600}>
+                    <Typography color='#333a57' variant="h5" fontWeight={600}>
                         Garden List
                     </Typography>
                 </Box>
@@ -103,6 +103,7 @@ const SidePanel = ({ selectedGarden, setSelectedGarden }) => {
                 {/* Search Bar */}
                 <Box sx={{ mb: 2 }}>
                     <Autocomplete
+                        sx={{ bgcolor: "white", borderRadius: 1 }}
                         fullWidth
                         size="small"
                         disablePortal
@@ -149,6 +150,7 @@ const SidePanel = ({ selectedGarden, setSelectedGarden }) => {
                     <FormControl fullWidth size="small">
                         <InputLabel id="garden-type-filter-label">Filter by Types</InputLabel>
                         <Select
+                            sx={{ bgcolor: "white", borderRadius: 1 }}
                             labelId="garden-type-filter-label"
                             id="garden-type-filter"
                             multiple
@@ -170,7 +172,7 @@ const SidePanel = ({ selectedGarden, setSelectedGarden }) => {
                             ))}
                         </Select>
                     </FormControl>
-                    <IconButton color="primary" onClick={handleFilterApply}>
+                    <IconButton sx={{ bgcolor: 'white' }} color="primary" onClick={handleFilterApply}>
                         <TuneIcon />
                     </IconButton>
                 </Box>
@@ -185,7 +187,7 @@ const SidePanel = ({ selectedGarden, setSelectedGarden }) => {
                     </Box>
                 ) : (
 
-                    <List sx={{ bgcolor: 'background.paper', p: 0 }}>
+                    <List sx={{ bgcolor: 'white', p: 0 }}>
                         {filteredGardens
                             .slice()
                             .sort((a, b) => a.mapNumber - b.mapNumber) // ✅ Sort by mapNumber
@@ -194,10 +196,11 @@ const SidePanel = ({ selectedGarden, setSelectedGarden }) => {
                                     <ListItemButton alignItems="flex-start"
                                         ref={(el) => (gardenRefs.current[garden.mapNumber] = el)}
                                         sx={{
-                                            borderRadius: 1,
-                                            bgcolor: selectedGardenId === garden.mapNumber ? 'primary.light' : 'transparent',
+                                            borderRadius: 2,
+                                            bgcolor: selectedGardenId === garden.mapNumber ? '#333a57' : 'white',
+                                            color: selectedGardenId === garden.mapNumber ? 'white' : 'black',
                                             '&:hover': {
-                                                bgcolor: selectedGardenId === garden.mapNumber ? 'primary.light' : 'action.hover',
+                                                bgcolor: selectedGardenId === garden.mapNumber ? '#3d4564' : '#e3edda',
                                             },
                                         }}
                                         onClick={() => {
@@ -215,14 +218,23 @@ const SidePanel = ({ selectedGarden, setSelectedGarden }) => {
                                             // )
                                         }>
                                         <ListItemAvatar>
-                                            <Avatar>
+                                            <Avatar
+                                                sx={{
+                                                    bgcolor: selectedGardenId === garden.mapNumber ? 'primary.dark' : 'grey.300',
+                                                    color: selectedGardenId === garden.mapNumber ? 'white' : 'black',
+                                                }}
+                                            >
                                                 {garden.mapNumber}
                                             </Avatar>
                                         </ListItemAvatar>
                                         <ListItemText
                                             primary={garden.name || `Garden #${garden.mapNumber}`}
                                             secondary={
-                                                <Typography component="span" variant="body2" fontSize={12} color="text.primary">
+                                                <Typography component="span" variant="body2" fontSize={12} color="text.primary"
+                                                    sx={{
+                                                        color: selectedGardenId === garden.mapNumber ? 'white' : 'black',
+                                                    }}
+                                                >
                                                     {garden.address}
                                                 </Typography>
                                             }

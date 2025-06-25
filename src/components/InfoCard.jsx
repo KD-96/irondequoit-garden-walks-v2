@@ -80,7 +80,12 @@ const InfoCard = ({ garden, onClose }) => {
                             {activeTypes.length > 0 && (
                                 <Box mt={2} sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                     {activeTypes.map((type) => (
-                                        <Chip key={type} label={type} size="small" />
+                                        <Chip key={type} label={type} size="small"
+                                            sx={{
+                                                bgcolor: '#333a57',
+                                                color: 'white'
+                                            }}
+                                        />
                                     ))}
                                 </Box>
                             )}

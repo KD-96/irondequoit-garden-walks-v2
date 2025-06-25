@@ -3,9 +3,11 @@ import { createTheme } from '@mui/material/styles';
 
 const customTheme = createTheme({
     palette: {
-        mode: 'light', // or 'dark'
+        mode: 'light', // or 'dark
+
         primary: {
-            main: '#2e7d32', // dark green for garden theme
+            main: '#a9c094', // dark green for garden theme
+            dark: '#6e9a45'
         },
         secondary: {
             main: '#66bb6a', // lighter green
