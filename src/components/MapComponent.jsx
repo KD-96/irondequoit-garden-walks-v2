@@ -1,7 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import useGardenStore from '../store/gardenStore';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { Chip, Box } from '@mui/material';
+
+import MapLayers from './MapLayers';
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoia2FzdW4wMDEiLCJhIjoiY202bms5b2p3MHgwaTJrcTRmazV4a3k2MyJ9.2fPU4RjLDqtvsiEBdAH3Tw';
 
@@ -11,6 +14,14 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
     const { gardens, fetchGardens } = useGardenStore();
     const selectedFeatureIdRef = useRef(null);
     const selectedMarkerRef = useRef(null);
+
+    const [isMapReady, setIsMapReady] = useState(false);
+
+    const [layerVisibility, setLayerVisibility] = useState({
+        neighborhoods: true,
+        bikeBoulevards: true,
+        protectedBikeTrails: true,
+    });
 
     useEffect(() => {
         if (mapRef.current) return;
@@ -23,6 +34,11 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
         });
 
         mapRef.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+        mapRef.current.on('load', () => {
+            setIsMapReady(true); // Only show layers after map is loaded
+        });
+
         fetchGardens();
     }, []);
 
@@ -71,7 +87,12 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
 
             if (features.length === 0) {
                 selectedFeatureIdRef.current = null;
-                map.setFilter('selected-garden-circle', ['==', 'mapNumber', '']);
+
+                // ✅ Only attempt to filter if the layer exists
+                if (map.getLayer('selected-garden-circle')) {
+                    map.setFilter('selected-garden-circle', ['==', 'mapNumber', '']);
+                }
+
                 popupRef.remove();
             }
         });
@@ -210,7 +231,68 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
     }, [selectedGarden]);
 
     return (
-        <div ref={mapContainerRef} className="mapbox-map" />
+        <div ref={mapContainerRef} className="mapbox-map">
+            {isMapReady && <MapLayers map={mapRef.current} />}
+
+            <div>
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        top: 8,
+                        left: 300,
+                        zIndex: 10,
+                        display: 'flex',
+                        gap: 1,
+                        flexWrap: 'wrap',
+                    }}
+                >
+                    {Object.entries(layerVisibility).map(([layer, visible]) => (
+                        <Chip
+                            key={layer}
+                            label={
+                                layer === 'neighborhoods'
+                                    ? 'Neighborhoods'
+                                    : layer === 'bikeBoulevards'
+                                        ? 'Bike Boulevards'
+                                        : layer === 'protectedBikeTrails'
+                                            ? 'Protected Bike Trails'
+                                            : layer
+                            }
+                            color={visible ? 'primary' : 'default'}
+                            variant={visible ? 'filled' : 'outlined'}
+                            onClick={() => {
+                                const newVisibility = !visible;
+                                setLayerVisibility((prev) => ({ ...prev, [layer]: newVisibility }));
+
+                                // Map your logical layer keys to Mapbox layer IDs
+                                let layerId = '';
+                                if (layer === 'bikeBoulevards') layerId = 'bike-boulevards-layer';
+                                else if (layer === 'protectedBikeTrails') layerId = 'protected-bike-trails-layer';
+                                else if (layer === 'neighborhoods') layerId = 'neighborhoods-layer';
+
+                                if (mapRef.current && mapRef.current.getLayer(layerId)) {
+                                    mapRef.current.setLayoutProperty(
+                                        layerId,
+                                        'visibility',
+                                        newVisibility ? 'visible' : 'none'
+                                    );
+                                }
+                            }}
+                            sx={{
+                                bgcolor: !visible ? 'white' : undefined,
+                                opacity: !visible ? 0.7 : 1,
+                                color: !visible ? 'text.primary' : undefined,
+                                borderColor: !visible ? 'grey.400' : undefined,
+                                '&:hover': {
+                                    bgcolor: !visible ? 'white !important' : undefined,
+                                    opacity: !visible ? 0.9 : 1,
+                                },
+                            }}
+                        />
+                    ))}
+                </Box>
+            </div>
+        </div>
     );
 };
 
