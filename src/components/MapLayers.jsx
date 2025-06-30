@@ -51,8 +51,8 @@ const MapLayers = ({ map }) => {
                     visibility: 'visible',
                 },
                 paint: {
-                    'line-color': '#b87200',
-                    'line-width': 3,
+                    'line-color': '#1990ff',
+                    'line-width': 4,
                 },
             }, insertBelowLayer);
         }
@@ -68,8 +68,8 @@ const MapLayers = ({ map }) => {
                     visibility: 'visible',
                 },
                 paint: {
-                    'line-color': '#b82e00',
-                    'line-width': 3,
+                    'line-color': '#009d51',
+                    'line-width': 4,
                 },
             }, insertBelowLayer);
         }
@@ -80,17 +80,17 @@ const MapLayers = ({ map }) => {
         if (!map.getLayer(neighborhoodLayerId)) {
             map.addLayer({
                 id: neighborhoodLayerId,
-                type: 'fill',
+                type: 'line', // 👈 use line type for outlines
                 source: neighborhoodSourceId,
                 'source-layer': 'neighborhoods',
                 layout: {
                     visibility: 'visible',
                 },
                 paint: {
-                    'fill-color': '#0080ff',
-                    'fill-opacity': 0.3,
+                    'line-color': '#6b8b4e',   // 👈 outline color
+                    'line-width': 1,           // 👈 outline thickness
                 },
-            }, firstSymbolLayerId);
+            }, 'bike-boulevards-layer');
         }
 
         // Cleanup
