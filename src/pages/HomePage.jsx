@@ -14,7 +14,7 @@ const HomePage = () => {
                     selectedGarden={selectedGarden}
                     setSelectedGarden={setSelectedGarden}
                 />
-                <div className="side-panel-container">
+                <div >
                     <SidePanel
                         selectedGarden={selectedGarden}
                         setSelectedGarden={setSelectedGarden}

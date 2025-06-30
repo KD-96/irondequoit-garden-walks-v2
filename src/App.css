@@ -20,20 +20,6 @@
   height: 100%;
 }
 
-.side-panel-container {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  /* width: 400px; */
-  height: calc(100% - 20px);
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
-  overflow-y: hidden;
-  z-index: 10;
-  padding: 10px;
-}
-
 .info-card-container {
   position: absolute;
   bottom: 1rem;
@@ -42,6 +28,7 @@
 }
 
 /* MAP COMPONENT------------------------------------- */
+
 .mapbox-map {
   width: 100%;
   height: 100%;
@@ -88,20 +75,43 @@
   }
 }
 /* SIDE PANEL---------------------------------------- */
+.side-panel-container {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  height: calc(100% - 20px);
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+  overflow-y: hidden;
+  z-index: 10;
+  padding: 10px;
+}
+
 .side-panel-content {
   max-width: 450px;
   min-width: 250px;
 }
-.s-p-filter {
+
+.s-p-filter-chips {
+  position: absolute;
+  top: 10px;
+  max-width: calc(100vw - 450px);
+  right: 40px;
+  max-height: calc(100vh - 20px);
+  overflow-y: auto;
   display: flex;
-  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  z-index: 11;
+  padding: 0 10px;
 }
 
 .s-p-garden-list {
-  height: calc(100vh - 200px);
+  height: calc(100vh - 145px);
   overflow-y: auto;
   scrollbar-width: thin; /* Firefox */
-  scrollbar-color: #ffffff95 transparent; /* Firefox */
+  scrollbar-color: #ffffff95; /* Firefox */
 }
 
 /* Chrome, Edge, Safari */

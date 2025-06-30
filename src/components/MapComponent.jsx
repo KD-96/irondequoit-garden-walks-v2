@@ -2,7 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import useGardenStore from '../store/gardenStore';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { Chip, Box } from '@mui/material';
+import {
+    Box, Chip, IconButton, Popover, FormGroup, FormControlLabel, Checkbox
+} from '@mui/material';
+import LayersIcon from '@mui/icons-material/Layers';
 
 import MapLayers from './MapLayers';
 
@@ -18,10 +21,35 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
     const [isMapReady, setIsMapReady] = useState(false);
 
     const [layerVisibility, setLayerVisibility] = useState({
-        neighborhoods: true,
         bikeBoulevards: true,
         protectedBikeTrails: true,
     });
+
+    // ⛳️ Hooks should go here
+    const [anchorEl, setAnchorEl] = useState(null);
+    const open = Boolean(anchorEl);
+
+    const handleToggleMenu = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const toggleLayer = (layerKey) => {
+        const newVisibility = !layerVisibility[layerKey];
+        setLayerVisibility((prev) => ({ ...prev, [layerKey]: newVisibility }));
+
+        const mapboxLayerId = {
+            bikeBoulevards: 'bike-boulevards-layer',
+            protectedBikeTrails: 'protected-bike-trails-layer',
+        }[layerKey];
+
+        if (mapRef.current?.getLayer(mapboxLayerId)) {
+            mapRef.current.setLayoutProperty(
+                mapboxLayerId,
+                'visibility',
+                newVisibility ? 'visible' : 'none'
+            );
+        }
+    };
 
     useEffect(() => {
         if (mapRef.current) return;
@@ -234,65 +262,54 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
         <div ref={mapContainerRef} className="mapbox-map">
             {isMapReady && <MapLayers map={mapRef.current} />}
 
-            <div>
-                <Box
-                    sx={{
-                        position: 'absolute',
-                        top: 8,
-                        left: 300,
-                        zIndex: 10,
-                        display: 'flex',
-                        gap: 1,
-                        flexWrap: 'wrap',
-                    }}
-                >
-                    {Object.entries(layerVisibility).map(([layer, visible]) => (
-                        <Chip
-                            key={layer}
-                            label={
-                                layer === 'neighborhoods'
-                                    ? 'Neighborhoods'
-                                    : layer === 'bikeBoulevards'
-                                        ? 'Bike Boulevards'
-                                        : layer === 'protectedBikeTrails'
-                                            ? 'Protected Bike Trails'
-                                            : layer
-                            }
-                            color={visible ? 'primary' : 'default'}
-                            variant={visible ? 'filled' : 'outlined'}
-                            onClick={() => {
-                                const newVisibility = !visible;
-                                setLayerVisibility((prev) => ({ ...prev, [layer]: newVisibility }));
+            <IconButton
+                onClick={handleToggleMenu}
+                sx={{
+                    scale: 0.8,
+                    position: 'absolute',
+                    top: 100,
+                    right: 5,
+                    zIndex: 10,
+                    bgcolor: 'white',
+                    boxShadow: 1,
+                    transition: 'background-color 0.2s ease',
+                    '&:hover': {
+                        bgcolor: '#ebebeb',
+                    },
+                }}
+            >
+                <LayersIcon />
+            </IconButton>
 
-                                // Map your logical layer keys to Mapbox layer IDs
-                                let layerId = '';
-                                if (layer === 'bikeBoulevards') layerId = 'bike-boulevards-layer';
-                                else if (layer === 'protectedBikeTrails') layerId = 'protected-bike-trails-layer';
-                                else if (layer === 'neighborhoods') layerId = 'neighborhoods-layer';
-
-                                if (mapRef.current && mapRef.current.getLayer(layerId)) {
-                                    mapRef.current.setLayoutProperty(
-                                        layerId,
-                                        'visibility',
-                                        newVisibility ? 'visible' : 'none'
-                                    );
-                                }
-                            }}
-                            sx={{
-                                bgcolor: !visible ? 'white' : undefined,
-                                opacity: !visible ? 0.7 : 1,
-                                color: !visible ? 'text.primary' : undefined,
-                                borderColor: !visible ? 'grey.400' : undefined,
-                                '&:hover': {
-                                    bgcolor: !visible ? 'white !important' : undefined,
-                                    opacity: !visible ? 0.9 : 1,
-                                },
-                            }}
-                        />
-                    ))}
-                </Box>
-            </div>
-        </div>
+            {/* 🌐 Popover for layer toggles */}
+            <Popover
+                open={open}
+                anchorEl={anchorEl}
+                onClose={() => setAnchorEl(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+                <FormGroup sx={{ p: 2 }}>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={layerVisibility.bikeBoulevards}
+                                onChange={() => toggleLayer('bikeBoulevards')}
+                            />
+                        }
+                        label="Bike Boulevards"
+                    />
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={layerVisibility.protectedBikeTrails}
+                                onChange={() => toggleLayer('protectedBikeTrails')}
+                            />
+                        }
+                        label="Protected Bike Trails"
+                    />
+                </FormGroup>
+            </Popover>
+        </div >
     );
 };
 
