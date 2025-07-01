@@ -33,6 +33,7 @@ const InfoCard = ({ garden, onClose }) => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 20 }}
                     transition={{ duration: 0.3 }}
+                    className="info-card-wrapper"
                 >
                     <Card sx={{ width: 320, boxShadow: 3, position: 'relative' }}>
                         <IconButton
