@@ -38,7 +38,11 @@ const MapLayers = ({ map }) => {
             });
         }
 
-        const insertBelowLayer = map.getLayer('garden-circles') ? 'garden-circles' : undefined;
+        const roadLabelLayerId = map.getStyle().layers.find(
+            (layer) => layer.type === 'symbol' && layer.id.includes('road')
+        )?.id;
+
+        const insertBelowLayer = roadLabelLayerId || 'garden-circles';
 
         // Add bike boulevards line layer
         if (!map.getLayer(bikeLayerId)) {

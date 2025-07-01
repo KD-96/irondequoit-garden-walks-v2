@@ -52,6 +52,7 @@ const AdminPage = () => {
                                 wheelchair_stroller: garden.wheelchair_stroller || '',
                             },
                             icon: garden.icon || '',
+                            group: garden.group || '',
                         };
 
                         batch.set(docRef, parsedGarden);

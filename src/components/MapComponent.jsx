@@ -56,7 +56,7 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
 
         mapRef.current = new mapboxgl.Map({
             container: mapContainerRef.current,
-            style: 'mapbox://styles/mapbox/streets-v12',
+            style: 'mapbox://styles/kasun001/cmcfsvrwg000k01r00zb9e7zc',
             center: [-77.581, 43.217],
             zoom: 12,
         });
@@ -147,15 +147,11 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
                     },
                     properties: {
                         mapNumber: garden.mapNumber,
-                        name: garden.name
+                        name: garden.name,
+                        group: garden.group
                     },
                 })),
         };
-
-        const sourceExists = map.getSource('gardens');
-        const highlightLayerExists = map.getLayer('selected-garden-circle');
-
-
 
         // Add source and layer
         if (mapRef.current.getSource('gardens')) {
@@ -196,10 +192,17 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
                         ['zoom'],
                         9, 4,
                         10, 6,
-                        12, 12,
-                        15, 16
+                        12, 10,
+                        15, 12
                     ],
-                    'circle-color': '#3e8448',
+                    'circle-color': [
+                        'match',
+                        ['get', 'group'],
+                        'residential', '#00a025',   // green
+                        'community', '#119cff',     // blue
+                        'welcome_center', '#ffd415',       // orange
+                        '#999999'                   // default (gray)
+                    ],
                     'circle-stroke-width': 1,
                     'circle-stroke-color': '#fff',
                 },
@@ -231,7 +234,7 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
             // Fly to the selected garden
             map.flyTo({
                 center: lngLat,
-                zoom: 14,
+                zoom: 16,
                 speed: 1.2,
                 curve: 1.4,
             });

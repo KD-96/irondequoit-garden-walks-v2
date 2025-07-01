@@ -71,6 +71,33 @@ const InfoCard = ({ garden, onClose }) => {
 
                         <CardContent>
                             <Typography variant="h6">{garden.name}</Typography>
+                            <div>
+
+
+                                {garden.group && (
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            display: 'inline-block',
+                                            width: 10,
+                                            height: 10,
+                                            borderRadius: '50%',
+                                            bgcolor:
+                                                garden.group === 'residential'
+                                                    ? '#00a025'
+                                                    : garden.group === 'community'
+                                                        ? '#119cff'
+                                                        : garden.group === 'welcome_center'
+                                                            ? '#ffd415'
+                                                            : '#999', // fallback
+                                        }}
+                                    />
+                                )}
+
+                                <Typography component="span" variant="subtitle2" color="text.secondary">
+                                    {garden.group ? ` ${garden.group}` : ''}
+                                </Typography>
+                            </div>
                             <Typography variant="body1">{garden.address}</Typography>
                             <Typography variant="body2" color="text.secondary" fontStyle={'italic'}>
                                 {garden.description}

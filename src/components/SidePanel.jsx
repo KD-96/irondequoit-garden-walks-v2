@@ -234,6 +234,9 @@ const SidePanel = ({ selectedGarden, setSelectedGarden }) => {
                                                             sx={{
                                                                 bgcolor: selectedGardenId === garden.mapNumber ? 'primary.dark' : 'grey.300',
                                                                 color: selectedGardenId === garden.mapNumber ? 'white' : 'black',
+                                                                '&:hover': {
+                                                                    bgcolor: selectedGardenId === garden.mapNumber ? 'primary.dark' : 'white',
+                                                                },
                                                             }}
                                                         >
                                                             {garden.mapNumber}
