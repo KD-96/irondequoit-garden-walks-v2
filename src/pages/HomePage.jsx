@@ -3,6 +3,7 @@ import { useState } from 'react';
 import MapComponent from '../components/MapComponent'
 import SidePanel from '../components/SidePanel'
 import InfoCard from '../components/InfoCard'
+import MapKey from '../components/mapKey';
 
 const HomePage = () => {
     const [selectedGarden, setSelectedGarden] = useState(null);
@@ -19,6 +20,7 @@ const HomePage = () => {
                         selectedGarden={selectedGarden}
                         setSelectedGarden={setSelectedGarden}
                     />
+                    {/* <MapKey /> */}
                 </div>
                 <div className="info-card-container">
                     <InfoCard
@@ -26,6 +28,7 @@ const HomePage = () => {
                         onClose={() => setSelectedGarden(null)}
                     />
                 </div>
+
             </div>
         </div>
     )

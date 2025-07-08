@@ -1,6 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const MapLayers = ({ map }) => {
+    const [layerVisibility, setLayerVisibility] = useState({
+        bikeBoulevards: false,
+        protectedBikeTrails: false,
+    });
+
     useEffect(() => {
         if (!map) return;
 
@@ -52,7 +57,7 @@ const MapLayers = ({ map }) => {
                 source: bikeSourceId,
                 'source-layer': 'bike_boulevards',
                 layout: {
-                    visibility: 'visible',
+                    visibility: layerVisibility?.bikeBoulevards ? 'visible' : 'none',
                 },
                 paint: {
                     'line-color': '#1990ff',
@@ -69,7 +74,7 @@ const MapLayers = ({ map }) => {
                 source: pBikeSourceId,
                 'source-layer': 'protected_bike_trails',
                 layout: {
-                    visibility: 'visible',
+                    visibility: layerVisibility?.protectedBikeTrails ? 'visible' : 'none',
                 },
                 paint: {
                     'line-color': '#009d51',

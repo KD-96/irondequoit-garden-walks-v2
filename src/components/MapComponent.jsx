@@ -21,8 +21,8 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
     const [isMapReady, setIsMapReady] = useState(false);
 
     const [layerVisibility, setLayerVisibility] = useState({
-        bikeBoulevards: true,
-        protectedBikeTrails: true,
+        bikeBoulevards: false,
+        protectedBikeTrails: false,
     });
 
     // ⛳️ Hooks should go here
