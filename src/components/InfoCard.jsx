@@ -1,19 +1,37 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-    Card,
-    CardMedia,
-    CardContent,
-    Typography,
-    CardActions,
-    Button,
-    IconButton,
-    Box,
-    Chip
+    Card, CardMedia, CardContent, Typography,
+    IconButton, Box, Chip, CircularProgress
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { ref, listAll, getDownloadURL } from 'firebase/storage';
+import { storage } from '../firebase/firebase.config';
+
 const InfoCard = ({ garden, onClose }) => {
+    const [imageUrls, setImageUrls] = useState([]);
+    const [loading, setLoading] = useState(true); // ⬅️ Add loading state
+
+    useEffect(() => {
+        if (!garden?.mapNumber) return;
+
+        setLoading(true); // ⬅️ Start loading
+        const folderRef = ref(storage, `gardens/${garden.mapNumber}`);
+
+        listAll(folderRef)
+            .then((res) => Promise.all(res.items.map((itemRef) => getDownloadURL(itemRef))))
+            .then((urls) => {
+                setImageUrls(urls);
+                setLoading(false); // ⬅️ End loading
+            })
+            .catch((error) => {
+                console.error('Error fetching Firebase images:', error);
+                setImageUrls([]);
+                setLoading(false); // ⬅️ Still end loading
+            });
+    }, [garden?.mapNumber]);
+
     if (!garden) return null;
 
     const activeTypes = garden.gardenTypes
@@ -21,9 +39,6 @@ const InfoCard = ({ garden, onClose }) => {
             .filter(([_, value]) => value === 'Y')
             .map(([key]) => key.replace(/_/g, ' '))
         : [];
-
-    // Dynamically set image path based on mapNumber
-    const imagePath = `/imgs/g${garden.mapNumber}.jpg`;
 
     return (
         <AnimatePresence>
@@ -44,37 +59,33 @@ const InfoCard = ({ garden, onClose }) => {
                                 top: 8,
                                 right: 8,
                                 zIndex: 1,
-                                bgcolor: 'rgba(255, 255, 255, 0.6)', // low opacity white
-                                '&:hover': {
-                                    bgcolor: 'rgba(255, 255, 255, 0.9)', // higher opacity on hover
-                                },
+                                bgcolor: 'rgba(255, 255, 255, 0.6)',
+                                '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.9)' },
                             }}
                         >
                             <CloseIcon />
                         </IconButton>
 
-                        {/* Top Image */}
-                        <CardMedia
-                            component="img"
-                            height="160"
-                            image={imagePath}
-                            alt={`Image of Garden #${garden.mapNumber}`}
-                        />
-
-                        {garden.image && (
-                            <CardMedia
-                                component="img"
-                                height="160"
-                                image={garden.image}
-                                alt={`Image of ${garden.title}`}
-                            />
-                        )}
+                        {/* ⬇️ Image loader container */}
+                        <Box sx={{ height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {loading ? (
+                                <CircularProgress size={30} />
+                            ) : (
+                                imageUrls[0] && (
+                                    <CardMedia
+                                        component="img"
+                                        height="160"
+                                        image={imageUrls[0]}
+                                        alt={`Garden ${garden.mapNumber}`}
+                                    />
+                                )
+                            )}
+                        </Box>
 
                         <CardContent>
                             <Typography variant="h6">{garden.name}</Typography>
+
                             <div>
-
-
                                 {garden.group && (
                                     <Box
                                         component="span"
@@ -90,7 +101,7 @@ const InfoCard = ({ garden, onClose }) => {
                                                         ? '#119cff'
                                                         : garden.group === 'welcome_center'
                                                             ? '#ffd415'
-                                                            : '#999', // fallback
+                                                            : '#999',
                                         }}
                                     />
                                 )}
@@ -99,20 +110,20 @@ const InfoCard = ({ garden, onClose }) => {
                                     {garden.group ? ` ${garden.group}` : ''}
                                 </Typography>
                             </div>
+
                             <Typography variant="body1">{garden.address}</Typography>
                             <Typography variant="body2" color="text.secondary" fontStyle={'italic'}>
                                 {garden.description}
                             </Typography>
 
-                            {/* Garden Types */}
                             {activeTypes.length > 0 && (
                                 <Box mt={2} sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                     {activeTypes.map((type) => (
-                                        <Chip key={type} label={type} size="small"
-                                            sx={{
-                                                bgcolor: '#333a57',
-                                                color: 'white'
-                                            }}
+                                        <Chip
+                                            key={type}
+                                            label={type}
+                                            size="small"
+                                            sx={{ bgcolor: '#333a57', color: 'white' }}
                                         />
                                     ))}
                                 </Box>

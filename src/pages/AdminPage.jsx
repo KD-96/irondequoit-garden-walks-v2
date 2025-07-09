@@ -5,6 +5,9 @@ import { collection, writeBatch, doc } from 'firebase/firestore';
 import { db } from '../firebase/firebase.config'; // Only import db now
 import { GeoPoint } from 'firebase/firestore';
 
+import { storage } from '../firebase/firebase.config';
+import { ref, uploadString } from 'firebase/storage';
+
 const AdminPage = () => {
     const handleFileUpload = async (e) => {
         const file = e.target.files[0];
@@ -27,12 +30,11 @@ const AdminPage = () => {
                 const gardenCollection = collection(db, 'gardens');
 
                 try {
-                    gardens.forEach((garden, index) => {
-                        // Validate that mapNumber exists and is a number
+                    for (const [index, garden] of gardens.entries()) {
                         const mapNumber = Number(garden.mapNumber);
                         if (!mapNumber || isNaN(mapNumber)) {
                             console.warn(`Skipping row ${index + 1}: invalid mapNumber`, garden);
-                            return;
+                            continue;
                         }
 
                         const docRef = doc(gardenCollection, mapNumber.toString());
@@ -55,8 +57,16 @@ const AdminPage = () => {
                             group: garden.group || '',
                         };
 
+                        // ✅ Create folder by uploading a dummy file
+                        try {
+                            const folderRef = ref(storage, `gardens/${mapNumber}/placeholder.txt`);
+                            await uploadString(folderRef, 'Reserved for garden images.');
+                        } catch (err) {
+                            console.warn(`Failed to create folder for mapNumber ${mapNumber}`, err);
+                        }
+
                         batch.set(docRef, parsedGarden);
-                    });
+                    }
 
                     await batch.commit();
                     alert('Gardens uploaded successfully!');
