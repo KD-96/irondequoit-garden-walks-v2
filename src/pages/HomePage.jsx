@@ -7,8 +7,12 @@ import MapComponent from '../components/MapComponent'
 import SidePanel from '../components/SidePanel'
 import InfoCard from '../components/InfoCard'
 
+import { useNavigate } from 'react-router-dom';
+
 const HomePage = () => {
     const [selectedGarden, setSelectedGarden] = useState(null);
+
+    const navigate = useNavigate();
 
     // Optionally track a reset counter
     const [resetSignal, setResetSignal] = useState(0);
@@ -18,9 +22,31 @@ const HomePage = () => {
         setResetSignal(prev => prev + 1); // To notify child components
     };
 
+    const handleNav = () => {
+        navigate('/admin')
+    }
+
     return (
         <div className="home-page-container">
             <div className="map-container">
+
+                <Button onClick={handleNav}
+                    sx={{
+                        scale: 0.8,
+                        position: 'absolute',
+                        top: 160,
+                        right: 5,
+                        zIndex: 10,
+                        bgcolor: 'white',
+                        boxShadow: 1,
+                        transition: 'background-color 0.2s ease',
+                        '&:hover': {
+                            bgcolor: '#ebebeb',
+                        },
+                    }}
+                >
+                    admin
+                </Button>
 
                 <IconButton
                     aria-label='keoo'
