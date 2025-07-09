@@ -160,6 +160,39 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
             mapRef.current.addSource('gardens', {
                 type: 'geojson',
                 data: geojson,
+                cluster: true,
+                clusterMaxZoom: 14, // Max zoom to cluster points
+                clusterRadius: 20,  // Radius of each cluster (in pixels)
+            });
+
+            mapRef.current.addLayer({
+                id: 'clusters',
+                type: 'circle',
+                source: 'gardens',
+                filter: ['has', 'point_count'],
+                paint: {
+                    'circle-color': 'black',
+                    'circle-radius': [
+                        'step',
+                        ['get', 'point_count'],
+                        10, 3, 14, 12, 18
+                    ],
+                }
+            });
+
+            mapRef.current.addLayer({
+                id: 'cluster-count',
+                type: 'symbol',
+                source: 'gardens',
+                filter: ['has', 'point_count'],
+                layout: {
+                    'text-field': '{point_count_abbreviated}',
+                    'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                    'text-size': 12
+                },
+                paint: {
+                    'text-color': '#fff'
+                }
             });
 
             mapRef.current.addLayer({
@@ -172,6 +205,7 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
                     'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
                     'text-offset': [0, -0.65],
                     'text-anchor': 'top',
+                    'text-allow-overlap': false, // ✅ let Mapbox hide overlapping text
                 },
                 paint: {
                     'text-color': '#fff',
@@ -185,28 +219,30 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
                 id: 'garden-circles',
                 type: 'circle',
                 source: 'gardens',
+                filter: ['!', ['has', 'point_count']],
                 paint: {
+                    // Shrink circles more aggressively at low zoom levels
                     'circle-radius': [
                         'interpolate',
                         ['linear'],
                         ['zoom'],
-                        9, 4,
-                        10, 6,
-                        12, 10,
-                        15, 12
+                        8, 2,      // ✅ dot at zoom 8
+                        10, 5,     // smaller than before
+                        14, 10,
+                        16, 12
                     ],
                     'circle-color': [
                         'match',
                         ['get', 'group'],
-                        'residential', '#00a025',   // green
-                        'community', '#119cff',     // blue
-                        'welcome_center', '#ffd415',       // orange
-                        '#999999'                   // default (gray)
+                        'residential', '#00a025',
+                        'community', '#119cff',
+                        'welcome_center', '#ffd415',
+                        '#999999'
                     ],
                     'circle-stroke-width': 1,
                     'circle-stroke-color': '#fff',
                 },
-            }, 'garden-points'); // Add below text
+            }, 'garden-points')
         }
 
         // Cleanup
