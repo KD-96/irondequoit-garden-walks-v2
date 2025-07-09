@@ -24,6 +24,7 @@ const InfoCard = ({ garden, onClose }) => {
             .then((urls) => {
                 setImageUrls(urls);
                 setLoading(false); // ⬅️ End loading
+                console.log(urls)
             })
             .catch((error) => {
                 console.error('Error fetching Firebase images:', error);
@@ -66,21 +67,21 @@ const InfoCard = ({ garden, onClose }) => {
                             <CloseIcon />
                         </IconButton>
 
-                        {/* ⬇️ Image loader container */}
-                        <Box sx={{ height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {loading ? (
+                        {loading ? (
+                            <Box sx={{ height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <CircularProgress size={30} />
-                            ) : (
-                                imageUrls[0] && (
-                                    <CardMedia
-                                        component="img"
-                                        height="160"
-                                        image={imageUrls[0]}
-                                        alt={`Garden ${garden.mapNumber}`}
-                                    />
-                                )
-                            )}
-                        </Box>
+                            </Box>
+                        ) : (
+                            imageUrls.length > 1 && (
+                                <CardMedia
+                                    component="img"
+                                    height="160"
+                                    image={imageUrls[0]}
+                                    alt={`Garden ${garden.mapNumber}`}
+                                    sx={{ objectFit: 'cover' }}
+                                />
+                            )
+                        )}
 
                         <CardContent>
                             <Typography variant="h6">{garden.name}</Typography>

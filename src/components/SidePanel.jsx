@@ -18,7 +18,7 @@ import useGardenStore from '../store/gardenStore';
 import gardenTypeIcons from '../utils/gardenTypeIcons';
 import MapKey from './mapKey';
 
-const SidePanel = ({ selectedGarden, setSelectedGarden }) => {
+const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
     const [selectedTypes, setSelectedTypes] = React.useState([]);
     const [selectedGardenId, setSelectedGardenId] = React.useState(null);
     const gardenRefs = React.useRef({});
@@ -28,6 +28,8 @@ const SidePanel = ({ selectedGarden, setSelectedGarden }) => {
     const [filteredGardens, setFilteredGardens] = React.useState([]);
 
     const [panelVisible, setPanelVisible] = useState(true);
+
+    const [searchValue, setSearchValue] = useState(null);
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -94,6 +96,19 @@ const SidePanel = ({ selectedGarden, setSelectedGarden }) => {
         loadGardens();
     }, []);
 
+    useEffect(() => {
+        // Reset internal state when resetSignal changes
+        setSelectedTypes([]);
+        setSelectedGardenId(null);
+        setPanelVisible(true); // Optional: reopen panel on reset
+        setSearchValue(null);
+
+        // Optionally re-load or show all gardens
+        const { gardens } = useGardenStore.getState();
+        setFilteredGardens(gardens);
+
+    }, [resetSignal]);
+
     return (
         <div className='side-panel-overlay'>
             <div
@@ -128,13 +143,6 @@ const SidePanel = ({ selectedGarden, setSelectedGarden }) => {
                     }
                 </IconButton>
             </div>
-
-            <IconButton
-                className="side-panel-toggle-btn"
-                onClick={() => setPanelVisible(!panelVisible)}
-            >
-                {panelVisible ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-            </IconButton>
 
             {/* Filter Chips OUTSIDE the panel */}
             <Box className="s-p-filter-chips">
@@ -199,7 +207,9 @@ const SidePanel = ({ selectedGarden, setSelectedGarden }) => {
                                             );
                                         })
                                     }
+                                    value={searchValue}
                                     onChange={(event, value) => {
+                                        setSearchValue(value);
                                         if (value) {
                                             setSelectedGardenId(value.mapNumber);
                                             setSelectedGarden(value);

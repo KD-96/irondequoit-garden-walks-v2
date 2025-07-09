@@ -266,6 +266,7 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
             {isMapReady && <MapLayers map={mapRef.current} />}
 
             <IconButton
+                title='Toggle layers'
                 onClick={handleToggleMenu}
                 sx={{
                     scale: 0.8,
