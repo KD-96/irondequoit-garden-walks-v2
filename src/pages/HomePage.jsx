@@ -25,7 +25,7 @@ const HomePage = () => {
     const handleNav = () => {
         navigate('/admin')
     }
-
+    // https://irondequoit-garden-walks-v2.vercel.app/admin
     return (
         <div className="home-page-container">
             <div className="map-container">
@@ -34,18 +34,13 @@ const HomePage = () => {
                     sx={{
                         scale: 0.8,
                         position: 'absolute',
-                        top: 160,
+                        top: 180,
                         right: 5,
                         zIndex: 10,
                         bgcolor: 'white',
-                        boxShadow: 1,
-                        transition: 'background-color 0.2s ease',
-                        '&:hover': {
-                            bgcolor: '#ebebeb',
-                        },
                     }}
                 >
-                    admin
+                    Upload CSV
                 </Button>
 
                 <IconButton
