@@ -296,11 +296,11 @@ const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
                                                                     sx={{
                                                                         bgcolor: selectedGardenId === garden.mapNumber
                                                                             ? 'primary.dark'
-                                                                            : garden.group === 'residential'
+                                                                            : garden.group === 'Residential'
                                                                                 ? '#00a025'
-                                                                                : garden.group === 'community'
+                                                                                : garden.group === 'Community'
                                                                                     ? '#119cff'
-                                                                                    : garden.group === 'welcome_center'
+                                                                                    : garden.group === 'Welcome Center'
                                                                                         ? '#ffd415'
                                                                                         : 'grey.300', // fallback color
 
@@ -308,11 +308,11 @@ const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
                                                                         '&:hover': {
                                                                             bgcolor: selectedGardenId === garden.mapNumber
                                                                                 ? 'primary.dark'
-                                                                                : garden.group === 'residential'
+                                                                                : garden.group === 'Residential'
                                                                                     ? '#00911f'
-                                                                                    : garden.group === 'community'
+                                                                                    : garden.group === 'Community'
                                                                                         ? '#0d88e0'
-                                                                                        : garden.group === 'welcome_center'
+                                                                                        : garden.group === 'Welcome Center'
                                                                                             ? '#e6c200'
                                                                                             : 'white',
                                                                         },
@@ -394,24 +394,45 @@ const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
                                                                 <Avatar
                                                                     sx={{
                                                                         bgcolor: selectedGardenId === garden.mapNumber
-                                                                            ? 'primary.dark'
-                                                                            : garden.group === 'residential'
+                                                                            ? garden.group === 'Residential'
+                                                                                ? 'white'
+                                                                                : garden.group === 'Community'
+                                                                                    ? 'white'
+                                                                                    : garden.group === 'Welcome Center'
+                                                                                        ? 'white'
+                                                                                        : 'white'
+                                                                            : garden.group === 'Residential'
                                                                                 ? '#00a025'
-                                                                                : garden.group === 'community'
+                                                                                : garden.group === 'Community'
                                                                                     ? '#119cff'
-                                                                                    : garden.group === 'welcome_center'
+                                                                                    : garden.group === 'Welcome Center'
                                                                                         ? '#ffd415'
-                                                                                        : 'grey.300', // fallback color
+                                                                                        : 'grey.300',
 
-                                                                        color: selectedGardenId === garden.mapNumber ? 'white' : 'black',
+                                                                        color: selectedGardenId === garden.mapNumber
+                                                                            ? garden.group === 'Residential'
+                                                                                ? '#00a025'
+                                                                                : garden.group === 'Community'
+                                                                                    ? '#119cff'
+                                                                                    : garden.group === 'Welcome Center'
+                                                                                        ? '#e4a300'
+                                                                                        : 'black'
+                                                                            : 'black',
+
                                                                         '&:hover': {
                                                                             bgcolor: selectedGardenId === garden.mapNumber
-                                                                                ? 'primary.dark'
-                                                                                : garden.group === 'residential'
+                                                                                ? garden.group === 'Residential'
+                                                                                    ? '#f4f4f4'
+                                                                                    : garden.group === 'Community'
+                                                                                        ? '#f0f0f0'
+                                                                                        : garden.group === 'Welcome Center'
+                                                                                            ? '#222'
+                                                                                            : '#eee'
+                                                                                : garden.group === 'Residential'
                                                                                     ? '#00911f'
-                                                                                    : garden.group === 'community'
+                                                                                    : garden.group === 'Community'
                                                                                         ? '#0d88e0'
-                                                                                        : garden.group === 'welcome_center'
+                                                                                        : garden.group === 'Welcome Center'
                                                                                             ? '#e6c200'
                                                                                             : 'white',
                                                                         },

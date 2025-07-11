@@ -22,31 +22,35 @@ const HomePage = () => {
         <div className="home-page-container">
             <div className="map-container">
 
-                <IconButton
-                    aria-label='keoo'
-                    title='Reset all changes'
+                <Button
+                    variant="contained"
+                    startIcon={<RestartAltIcon />}
                     onClick={handleReset}
+                    title='Reset all changes'
                     sx={{
-                        scale: 0.8,
+                        width: '100px',
                         position: 'absolute',
-                        top: 140,
+                        top: 150,
                         right: 5,
                         zIndex: 10,
                         bgcolor: 'white',
+                        color: '#ff8585',
                         boxShadow: 1,
-                        transition: 'background-color 0.2s ease',
+                        textTransform: 'none',
+                        fontWeight: 500,
+                        fontSize: '0.875rem',
                         '&:hover': {
                             bgcolor: '#ebebeb',
                         },
                     }}
                 >
-                    <RestartAltIcon />
-                </IconButton>
+                    Reset
+                </Button>
 
                 <MapComponent
                     selectedGarden={selectedGarden}
                     setSelectedGarden={setSelectedGarden}
-                // resetSignal={resetSignal} 
+                    resetSignal={resetSignal}
                 />
 
                 <div >

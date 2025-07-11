@@ -4,7 +4,7 @@
   --color-1: #333a57;
   --color-1: #3d4564;
   --color-2: #a9c094;
-  --color-3: #cecece;
+  --color-3: #e4a300;
 }
 
 /* HOME PAGE---------------------------------------- */
@@ -136,7 +136,7 @@
   border-radius: 8px;
   padding: 12px 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  width: 225px;
+  width: 230px;
   font-family: "Roboto", sans-serif;
 }
 
