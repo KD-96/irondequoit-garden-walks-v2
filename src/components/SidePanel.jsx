@@ -128,18 +128,24 @@ const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
                     onClick={() => setPanelVisible(!panelVisible)}
                     className="side-panel-toggle-btn"
                     sx={{
-                        bgcolor: "#cecece",
-                        color: 'white',
-                        '&:hover': {
-                            bgcolor: 'primary.dark',
-                        },
-                        // bottom: isMobile ? '0' : '0',
 
+                        bgcolor: panelVisible ? 'primary.main' : '#ffffff',
+                        color: panelVisible ? '#ffffff' : 'primary.main',
+                        border: '2px solid',
+                        borderColor: panelVisible ? 'primary.dark' : 'primary.main',
+                        boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                            bgcolor: panelVisible ? 'primary.dark' : 'primary.light',
+                            color: '#ffffff',
+                            transform: 'scale(1.1)',
+                        },
+                        zIndex: 10,
                     }}
                 >
                     {isMobile
-                        ? panelVisible ? <KeyboardArrowDownIcon /> : <KeyboardArrowUpIcon />
-                        : panelVisible ? <ChevronLeftIcon /> : <ChevronRightIcon />
+                        ? panelVisible ? <KeyboardArrowDownIcon sx={{ fontSize: 32, fontWeight: 700 }} /> : <KeyboardArrowUpIcon sx={{ fontSize: 32, fontWeight: 700 }} />
+                        : panelVisible ? <ChevronLeftIcon sx={{ fontSize: 32, fontWeight: 700 }} /> : <ChevronRightIcon sx={{ fontSize: 32, fontWeight: 700 }} />
                     }
                 </IconButton>
             </div>
@@ -178,7 +184,7 @@ const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
                     <div className='side-panel-content'>
                         <Box sx={{ pl: 2, pr: 2 }}>
                             {/* Title */}
-                            <Box sx={{ mb: 2 }}>
+                            <Box sx={{ mt: 1, mb: 2 }}>
                                 <Typography color='#333a57' variant="h5" fontWeight={600}
                                     className='s-p-header'
                                 >

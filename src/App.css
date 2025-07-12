@@ -4,7 +4,7 @@
   --color-1: #333a57;
   --color-1: #3d4564;
   --color-2: #a9c094;
-  --color-3: #e4a300;
+  --color-3: #7f7f7f;
 }
 
 /* HOME PAGE---------------------------------------- */
@@ -121,7 +121,7 @@
 }
 
 .s-p-header {
-  padding-left: 25px;
+  padding-left: 35px;
 }
 
 .map-key-wrapper {
