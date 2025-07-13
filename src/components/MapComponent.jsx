@@ -3,15 +3,16 @@ import mapboxgl from 'mapbox-gl';
 import useGardenStore from '../store/gardenStore';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import {
-    Box, Chip, IconButton, Popover, FormGroup, FormControlLabel, Checkbox
+    Box, Chip, IconButton, Popover, FormGroup, FormControlLabel, Checkbox, Button
 } from '@mui/material';
 import LayersIcon from '@mui/icons-material/Layers';
 
 import MapLayers from './MapLayers';
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoia2FzdW4wMDEiLCJhIjoiY202bms5b2p3MHgwaTJrcTRmazV4a3k2MyJ9.2fPU4RjLDqtvsiEBdAH3Tw';
+// mapboxgl.accessToken = 'pk.eyJ1IjoiaWd3Y2hlbm5pbmciLCJhIjoiY203anlyZG1nMDF0MzJ2cHh0ZG82dDNseiJ9.qRng6e2eIFckJ8pi5twy3A'
 
-const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
+const MapComponent = ({ selectedGarden, setSelectedGarden, resetSignal, isPanelOpen }) => {
     const mapContainerRef = useRef(null);
     const mapRef = useRef(null);
     const { gardens, fetchGardens } = useGardenStore();
@@ -52,12 +53,20 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
     };
 
     useEffect(() => {
+        if (mapRef.current) {
+            setTimeout(() => {
+                mapRef.current.resize(); // Ensure layout is recalculated after CSS transition
+            }, 300); // Delay a bit if you have transitions or animations
+        }
+    }, [isPanelOpen]);
+
+    useEffect(() => {
         if (mapRef.current) return;
 
         mapRef.current = new mapboxgl.Map({
             container: mapContainerRef.current,
             style: 'mapbox://styles/kasun001/cmcfsvrwg000k01r00zb9e7zc',
-            center: [-77.581, 43.217],
+            center: [-77.620, 43.227],
             zoom: 12,
         });
 
@@ -69,6 +78,33 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
 
         fetchGardens();
     }, []);
+
+    useEffect(() => {
+        if (!mapRef.current) return;
+
+        const map = mapRef.current;
+
+        const isMobile = window.innerWidth <= 768;
+
+        // Default center
+        const baseCenter = [-77.620, 43.227];
+
+        // Offset the longitude if not on mobile (shift map to the right to account for sidebar)
+        const adjustedCenter = isMobile
+            ? [baseCenter[0] + 0.02, baseCenter[1]]
+            : baseCenter;
+
+        console.log(adjustedCenter);
+
+
+        map.flyTo({
+            center: adjustedCenter,
+            zoom: 12,
+            speed: 1.2,
+            curve: 1.4,
+            essential: true,
+        });
+    }, [resetSignal]);
 
     useEffect(() => {
         if (!mapRef.current || !gardens.length) return;
@@ -195,6 +231,49 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
                 }
             });
 
+            mapRef.current.on('click', 'clusters', (e) => {
+                const features = mapRef.current.queryRenderedFeatures(e.point, {
+                    layers: ['clusters'],
+                });
+
+                const clusterId = features[0].properties.cluster_id;
+                const coordinates = features[0].geometry.coordinates;
+
+                mapRef.current.getSource('gardens').getClusterExpansionZoom(
+                    clusterId,
+                    (err, zoom) => {
+                        if (err) return;
+
+                        // // 💡 Shift center 150px to the left
+                        // const point = mapRef.current.project(coordinates);
+                        // point.x -= 100; // shift left (adjust pixel value as needed)
+                        // const shiftedLngLat = mapRef.current.unproject(point);
+
+                        // mapRef.current.easeTo({
+                        //     center: shiftedLngLat,
+                        //     zoom: zoom,
+                        //     duration: 500,
+                        // });
+
+                        const center = features[0].geometry.coordinates;
+
+                        // ✅ Check screen width
+                        const isMobile = window.innerWidth <= 768;
+
+                        mapRef.current.easeTo({
+                            center: isMobile
+                                ? center // 👉 no offset for mobile
+                                : [
+                                    center[0] - 0.0055, // adjust X offset (lng) for desktop
+                                    center[1]
+                                ],
+                            zoom: zoom,
+                            duration: 500,
+                        });
+                    }
+                );
+            });
+
             mapRef.current.addLayer({
                 id: 'garden-points',
                 type: 'symbol',
@@ -234,9 +313,9 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
                     'circle-color': [
                         'match',
                         ['get', 'group'],
-                        'residential', '#00a025',
-                        'community', '#119cff',
-                        'welcome_center', '#ffd415',
+                        'Residential', '#00a025',
+                        'Community', '#119cff',
+                        'Welcome Center', '#ffd415',
                         '#999999'
                     ],
                     'circle-stroke-width': 1,
@@ -270,7 +349,7 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
             // Fly to the selected garden
             map.flyTo({
                 center: lngLat,
-                zoom: 16,
+                zoom: 20,
                 speed: 1.2,
                 curve: 1.4,
             });
@@ -298,28 +377,33 @@ const MapComponent = ({ selectedGarden, setSelectedGarden }) => {
     }, [selectedGarden]);
 
     return (
-        <div ref={mapContainerRef} className="mapbox-map">
+        <div ref={mapContainerRef}
+            className={`mapbox-map ${isPanelOpen === false ? 'full-height' : ''}`}
+        >
             {isMapReady && <MapLayers map={mapRef.current} />}
 
-            <IconButton
-                title='Toggle layers'
+            <Button
                 onClick={handleToggleMenu}
                 sx={{
-                    scale: 0.8,
+                    width: '100px',
                     position: 'absolute',
-                    top: 100,
+                    top: 105,
                     right: 5,
                     zIndex: 10,
                     bgcolor: 'white',
+                    color: '#7f7f7f',
                     boxShadow: 1,
-                    transition: 'background-color 0.2s ease',
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    fontSize: '0.875rem',
                     '&:hover': {
                         bgcolor: '#ebebeb',
                     },
                 }}
+                title="Toggle layers"
             >
-                <LayersIcon />
-            </IconButton>
+                <LayersIcon /> Layers
+            </Button>
 
             {/* 🌐 Popover for layer toggles */}
             <Popover

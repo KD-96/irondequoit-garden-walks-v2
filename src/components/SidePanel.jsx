@@ -18,7 +18,7 @@ import useGardenStore from '../store/gardenStore';
 import gardenTypeIcons from '../utils/gardenTypeIcons';
 import MapKey from './mapKey';
 
-const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
+const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal, setIsPanelOpen }) => {
     const [selectedTypes, setSelectedTypes] = React.useState([]);
     const [selectedGardenId, setSelectedGardenId] = React.useState(null);
     const gardenRefs = React.useRef({});
@@ -35,6 +35,10 @@ const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     const [loading, setLoading] = React.useState(true);
+
+    useEffect(() => {
+        setIsPanelOpen(!!panelVisible)
+    }, [panelVisible, setIsPanelOpen])
 
     useEffect(() => {
         const { gardens } = useGardenStore.getState();
@@ -116,10 +120,10 @@ const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
                 style={{
                     top: panelVisible
                         ? isMobile
-                            ? 'calc(50% - 25px)' // panel visible + mobile
+                            ? 'calc(50% + 7px)' // panel visible + mobile
                             : '20px'             // panel visible + desktop
                         : isMobile
-                            ? 'calc(100% - 45px)' // panel hidden + mobile
+                            ? 'calc(100% - 60px)' // panel hidden + mobile
                             : '20px',             // panel hidden + desktop
                 }}
             >
@@ -128,18 +132,24 @@ const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
                     onClick={() => setPanelVisible(!panelVisible)}
                     className="side-panel-toggle-btn"
                     sx={{
-                        bgcolor: "#cecece",
-                        color: 'white',
-                        '&:hover': {
-                            bgcolor: 'primary.dark',
-                        },
-                        // bottom: isMobile ? '0' : '0',
 
+                        bgcolor: panelVisible ? 'primary.main' : '#ffffff',
+                        color: panelVisible ? '#ffffff' : 'primary.main',
+                        border: '2px solid',
+                        borderColor: panelVisible ? 'primary.dark' : 'primary.main',
+                        boxShadow: '0px 3px 4px rgba(0, 0, 0, 0.3)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                            bgcolor: panelVisible ? 'primary.dark' : 'primary.light',
+                            color: '#ffffff',
+                            transform: 'scale(1.1)',
+                        },
+                        zIndex: 10,
                     }}
                 >
                     {isMobile
-                        ? panelVisible ? <KeyboardArrowDownIcon /> : <KeyboardArrowUpIcon />
-                        : panelVisible ? <ChevronLeftIcon /> : <ChevronRightIcon />
+                        ? panelVisible ? <KeyboardArrowDownIcon sx={{ fontSize: 32, fontWeight: 700 }} /> : <KeyboardArrowUpIcon sx={{ fontSize: 32, fontWeight: 700 }} />
+                        : panelVisible ? <ChevronLeftIcon sx={{ fontSize: 32, fontWeight: 700 }} /> : <ChevronRightIcon sx={{ fontSize: 32, fontWeight: 700 }} />
                     }
                 </IconButton>
             </div>
@@ -175,10 +185,12 @@ const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
 
             {panelVisible && (
                 <Box display="flex" className="side-panel-container" >
-                    <div className='side-panel-content'>
+                    <div className='side-panel-content'
+                        display={panelVisible && !(isMobile && selectedGarden) ? 'flex' : 'none'}
+                    >
                         <Box sx={{ pl: 2, pr: 2 }}>
                             {/* Title */}
-                            <Box sx={{ mb: 2 }}>
+                            <Box sx={{ mt: 1, mb: 2 }}>
                                 <Typography color='#333a57' variant="h5" fontWeight={600}
                                     className='s-p-header'
                                 >
@@ -296,11 +308,11 @@ const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
                                                                     sx={{
                                                                         bgcolor: selectedGardenId === garden.mapNumber
                                                                             ? 'primary.dark'
-                                                                            : garden.group === 'residential'
+                                                                            : garden.group === 'Residential'
                                                                                 ? '#00a025'
-                                                                                : garden.group === 'community'
+                                                                                : garden.group === 'Community'
                                                                                     ? '#119cff'
-                                                                                    : garden.group === 'welcome_center'
+                                                                                    : garden.group === 'Welcome Center'
                                                                                         ? '#ffd415'
                                                                                         : 'grey.300', // fallback color
 
@@ -308,11 +320,11 @@ const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
                                                                         '&:hover': {
                                                                             bgcolor: selectedGardenId === garden.mapNumber
                                                                                 ? 'primary.dark'
-                                                                                : garden.group === 'residential'
+                                                                                : garden.group === 'Residential'
                                                                                     ? '#00911f'
-                                                                                    : garden.group === 'community'
+                                                                                    : garden.group === 'Community'
                                                                                         ? '#0d88e0'
-                                                                                        : garden.group === 'welcome_center'
+                                                                                        : garden.group === 'Welcome Center'
                                                                                             ? '#e6c200'
                                                                                             : 'white',
                                                                         },
@@ -394,24 +406,45 @@ const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
                                                                 <Avatar
                                                                     sx={{
                                                                         bgcolor: selectedGardenId === garden.mapNumber
-                                                                            ? 'primary.dark'
-                                                                            : garden.group === 'residential'
+                                                                            ? garden.group === 'Residential'
+                                                                                ? 'white'
+                                                                                : garden.group === 'Community'
+                                                                                    ? 'white'
+                                                                                    : garden.group === 'Welcome Center'
+                                                                                        ? 'white'
+                                                                                        : 'white'
+                                                                            : garden.group === 'Residential'
                                                                                 ? '#00a025'
-                                                                                : garden.group === 'community'
+                                                                                : garden.group === 'Community'
                                                                                     ? '#119cff'
-                                                                                    : garden.group === 'welcome_center'
+                                                                                    : garden.group === 'Welcome Center'
                                                                                         ? '#ffd415'
-                                                                                        : 'grey.300', // fallback color
+                                                                                        : 'grey.300',
 
-                                                                        color: selectedGardenId === garden.mapNumber ? 'white' : 'black',
+                                                                        color: selectedGardenId === garden.mapNumber
+                                                                            ? garden.group === 'Residential'
+                                                                                ? '#00a025'
+                                                                                : garden.group === 'Community'
+                                                                                    ? '#119cff'
+                                                                                    : garden.group === 'Welcome Center'
+                                                                                        ? '#e4a300'
+                                                                                        : 'black'
+                                                                            : 'black',
+
                                                                         '&:hover': {
                                                                             bgcolor: selectedGardenId === garden.mapNumber
-                                                                                ? 'primary.dark'
-                                                                                : garden.group === 'residential'
+                                                                                ? garden.group === 'Residential'
+                                                                                    ? '#f4f4f4'
+                                                                                    : garden.group === 'Community'
+                                                                                        ? '#f0f0f0'
+                                                                                        : garden.group === 'Welcome Center'
+                                                                                            ? '#222'
+                                                                                            : '#eee'
+                                                                                : garden.group === 'Residential'
                                                                                     ? '#00911f'
-                                                                                    : garden.group === 'community'
+                                                                                    : garden.group === 'Community'
                                                                                         ? '#0d88e0'
-                                                                                        : garden.group === 'welcome_center'
+                                                                                        : garden.group === 'Welcome Center'
                                                                                             ? '#e6c200'
                                                                                             : 'white',
                                                                         },
@@ -463,7 +496,7 @@ const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
                 className="map-key-wrapper"
                 style={{
                     left: isMobile
-                        ? 'calc(100% - 230px)'                      // Mobile: always 20px
+                        ? 'calc(100% - 220px)'                      // Mobile: always 20px
                         : panelVisible
                             ? '330px'                  // Desktop + panel open
                             : '10px',                  // Desktop + panel closed

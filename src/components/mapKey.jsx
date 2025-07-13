@@ -10,11 +10,11 @@ const groupLegend = [
 ];
 
 const typeLegend = [
-    { key: 'Vegetable/ Fruit', label: 'Vegetable/ Fruit Garden' },
+    { key: 'Vegetable / Fruit', label: 'Vegetable / Fruit Garden' },
     { key: 'Water Feature', label: 'Water Feature' },
-    { key: 'Wheelchair/ Stroller', label: 'Accessible' },
-    { key: 'Pollinator/ Native', label: 'Pollinator/ Native' },
-    { key: 'Art/ Sculpture', label: 'Art/ Sculpture' },
+    { key: 'Wheelchair / Stroller', label: 'Accessible' },
+    { key: 'Pollinator / Native', label: 'Pollinator / Native' },
+    { key: 'Art / Sculpture', label: 'Art / Sculpture' },
 ];
 
 const MapKey = () => {
@@ -25,12 +25,12 @@ const MapKey = () => {
             </Typography>
 
             {/* Group Legend */}
-            {/* {groupLegend.map(({ label, color }) => (
+            {groupLegend.map(({ label, color }) => (
                 <Box key={label} className="map-key-item">
                     <Box className="map-key-icon" sx={{ backgroundColor: color, borderRadius: 2 }} />
                     <Typography variant="body2">{label}</Typography>
                 </Box>
-            ))} */}
+            ))}
 
             {/* Divider (optional) */}
             <Box sx={{ my: 1, borderTop: '1px solid #ccc' }} />

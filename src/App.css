@@ -4,7 +4,7 @@
   --color-1: #333a57;
   --color-1: #3d4564;
   --color-2: #a9c094;
-  --color-3: #cecece;
+  --color-3: #7f7f7f;
 }
 
 /* HOME PAGE---------------------------------------- */
@@ -29,7 +29,7 @@
 
 @media screen and (max-width: 768px) {
   .home-page-container {
-    height: 92vh;
+    height: 100dvh;
   }
 }
 
@@ -40,11 +40,15 @@
   height: 100%;
 }
 
-/* @media screen and (max-width: 768px) {
+@media screen and (max-width: 768px) {
   .mapbox-map {
-    height: 50%;
+    height: 51dvh;
   }
-} */
+
+  .mapbox-map.full-height {
+    height: 100dvh;
+  }
+}
 
 .garden-marker {
   width: 28px;
@@ -121,7 +125,7 @@
 }
 
 .s-p-header {
-  padding-left: 25px;
+  padding-left: 35px;
 }
 
 .map-key-wrapper {
@@ -136,8 +140,14 @@
   border-radius: 8px;
   padding: 12px 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  width: 225px;
+  width: 230px;
   font-family: "Roboto", sans-serif;
+}
+
+@media screen and (max-width: 768px) {
+  .map-key-box {
+    width: 210px;
+  }
 }
 
 .map-key-item {
@@ -203,7 +213,7 @@
     bottom: 0;
     right: 0;
     width: 100%;
-    height: 50vh;
+    height: 50dvh;
     border-radius: 12px 12px 0 0;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
     padding: 12px;
@@ -232,7 +242,7 @@
   }
 
   .s-p-garden-list {
-    height: calc(50vh - 130px);
+    height: calc(50vh - 160px);
   }
 
   .side-panel-toggle-btn-container {
@@ -268,6 +278,7 @@
     z-index: 9999;
     display: flex;
     justify-content: center;
+    height: 50dvh;
   }
 
   .info-card-wrapper .MuiCard-root {

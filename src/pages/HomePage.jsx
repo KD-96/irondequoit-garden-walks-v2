@@ -2,6 +2,8 @@ import { useState, useRef } from 'react';
 
 import { Button, IconButton } from '@mui/material';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 
 import MapComponent from '../components/MapComponent'
 import SidePanel from '../components/SidePanel'
@@ -12,10 +14,13 @@ import { useNavigate } from 'react-router-dom';
 const HomePage = () => {
     const [selectedGarden, setSelectedGarden] = useState(null);
 
-    const navigate = useNavigate();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     // Optionally track a reset counter
     const [resetSignal, setResetSignal] = useState(0);
+
+    const [isPanelOpen, setIsPanelOpen] = useState(true)
 
     const handleReset = () => {
         setSelectedGarden(null);
@@ -30,53 +35,47 @@ const HomePage = () => {
         <div className="home-page-container">
             <div className="map-container">
 
-                <Button onClick={handleNav}
-                    sx={{
-                        scale: 0.8,
-                        position: 'absolute',
-                        top: 180,
-                        right: 5,
-                        zIndex: 10,
-                        bgcolor: 'white',
-                    }}
-                >
-                    Upload CSV
-                </Button>
-
-                <IconButton
-                    aria-label='keoo'
-                    title='Reset all changes'
+                <Button
+                    variant="contained"
+                    startIcon={<RestartAltIcon />}
                     onClick={handleReset}
+                    title='Reset all changes'
                     sx={{
-                        scale: 0.8,
+                        width: '100px',
                         position: 'absolute',
-                        top: 140,
+                        top: 150,
                         right: 5,
                         zIndex: 10,
                         bgcolor: 'white',
+                        color: '#ff8585',
                         boxShadow: 1,
-                        transition: 'background-color 0.2s ease',
+                        textTransform: 'none',
+                        fontWeight: 500,
+                        fontSize: '0.875rem',
                         '&:hover': {
                             bgcolor: '#ebebeb',
                         },
                     }}
                 >
-                    <RestartAltIcon />
-                </IconButton>
+                    Reset
+                </Button>
 
                 <MapComponent
                     selectedGarden={selectedGarden}
                     setSelectedGarden={setSelectedGarden}
-                // resetSignal={resetSignal} 
+                    resetSignal={resetSignal}
+                    isPanelOpen={isPanelOpen}
                 />
 
                 <div >
-                    <SidePanel
-                        selectedGarden={selectedGarden}
-                        setSelectedGarden={setSelectedGarden}
-                        resetSignal={resetSignal}
-                    />
-                    {/* <MapKey /> */}
+                    {(!isMobile || !selectedGarden) && (
+                        <SidePanel
+                            selectedGarden={selectedGarden}
+                            setSelectedGarden={setSelectedGarden}
+                            resetSignal={resetSignal}
+                            setIsPanelOpen={setIsPanelOpen}
+                        />
+                    )}
                 </div>
 
                 <div className="info-card-container">

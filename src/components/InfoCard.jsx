@@ -96,11 +96,11 @@ const InfoCard = ({ garden, onClose }) => {
                                             height: 10,
                                             borderRadius: '50%',
                                             bgcolor:
-                                                garden.group === 'residential'
+                                                garden.group === 'Residential'
                                                     ? '#00a025'
-                                                    : garden.group === 'community'
+                                                    : garden.group === 'Community'
                                                         ? '#119cff'
-                                                        : garden.group === 'welcome_center'
+                                                        : garden.group === 'Welcome Center'
                                                             ? '#ffd415'
                                                             : '#999',
                                         }}

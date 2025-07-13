@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from "firebase/storage";
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 
 const firebaseConfig = {
     apiKey: "AIzaSyBa1qsIMKudTfUQO_SLE32cKuS3nvmtvRY",
@@ -12,11 +13,21 @@ const firebaseConfig = {
     measurementId: "G-L766YTCS1K"
 };
 
-// Initialize Firebase App
 const firebaseApp = initializeApp(firebaseConfig);
 
-// Export Firestore DB instance
-const db = getFirestore(firebaseApp);
+// const appCheck = initializeAppCheck(firebaseApp, {
+//     provider: new ReCaptchaV3Provider('6LcBi4ErAAAAABqSxJWRq1HPt7DN9cVFvTz7UDfO'),
+//     isTokenAutoRefreshEnabled: true,
+// });
 
-export { firebaseApp, db };
-export const storage = getStorage(firebaseApp);
+// getToken(appCheck, /* forceRefresh */ true).then(token => {
+//     console.log('App Check Token:', token);
+// }).catch(err => {
+//     console.error('App Check token error:', err);
+// });
+
+// ✅ Now initialize Firestore and Storage
+const db = getFirestore(firebaseApp);
+const storage = getStorage(firebaseApp);
+
+export { firebaseApp, db, storage };
