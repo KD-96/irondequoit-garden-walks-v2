@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from "firebase/storage";
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 
 const firebaseConfig = {
     apiKey: "AIzaSyBa1qsIMKudTfUQO_SLE32cKuS3nvmtvRY",
@@ -12,11 +13,16 @@ const firebaseConfig = {
     measurementId: "G-L766YTCS1K"
 };
 
-// Initialize Firebase App
 const firebaseApp = initializeApp(firebaseConfig);
 
-// Export Firestore DB instance
-const db = getFirestore(firebaseApp);
+// ✅ App Check must be initialized BEFORE any Firebase service is used!
+const appCheck = initializeAppCheck(firebaseApp, {
+    provider: new ReCaptchaV3Provider('YOUR_RECAPTCHA_SITE_KEY'),
+    isTokenAutoRefreshEnabled: true,
+});
 
-export { firebaseApp, db };
-export const storage = getStorage(firebaseApp);
+// ✅ Now initialize Firestore and Storage
+const db = getFirestore(firebaseApp);
+const storage = getStorage(firebaseApp);
+
+export { firebaseApp, db, storage };

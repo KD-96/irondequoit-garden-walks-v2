@@ -18,7 +18,7 @@ import useGardenStore from '../store/gardenStore';
 import gardenTypeIcons from '../utils/gardenTypeIcons';
 import MapKey from './mapKey';
 
-const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
+const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal, setIsPanelOpen }) => {
     const [selectedTypes, setSelectedTypes] = React.useState([]);
     const [selectedGardenId, setSelectedGardenId] = React.useState(null);
     const gardenRefs = React.useRef({});
@@ -35,6 +35,10 @@ const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     const [loading, setLoading] = React.useState(true);
+
+    useEffect(() => {
+        setIsPanelOpen(!!panelVisible)
+    }, [panelVisible, setIsPanelOpen])
 
     useEffect(() => {
         const { gardens } = useGardenStore.getState();
@@ -116,10 +120,10 @@ const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
                 style={{
                     top: panelVisible
                         ? isMobile
-                            ? 'calc(50% - 25px)' // panel visible + mobile
+                            ? 'calc(50% + 7px)' // panel visible + mobile
                             : '20px'             // panel visible + desktop
                         : isMobile
-                            ? 'calc(100% - 45px)' // panel hidden + mobile
+                            ? 'calc(100% - 60px)' // panel hidden + mobile
                             : '20px',             // panel hidden + desktop
                 }}
             >
@@ -133,7 +137,7 @@ const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
                         color: panelVisible ? '#ffffff' : 'primary.main',
                         border: '2px solid',
                         borderColor: panelVisible ? 'primary.dark' : 'primary.main',
-                        boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
+                        boxShadow: '0px 3px 4px rgba(0, 0, 0, 0.3)',
                         transition: 'all 0.3s ease',
                         '&:hover': {
                             bgcolor: panelVisible ? 'primary.dark' : 'primary.light',
@@ -181,7 +185,9 @@ const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
 
             {panelVisible && (
                 <Box display="flex" className="side-panel-container" >
-                    <div className='side-panel-content'>
+                    <div className='side-panel-content'
+                        display={panelVisible && !(isMobile && selectedGarden) ? 'flex' : 'none'}
+                    >
                         <Box sx={{ pl: 2, pr: 2 }}>
                             {/* Title */}
                             <Box sx={{ mt: 1, mb: 2 }}>
@@ -490,7 +496,7 @@ const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
                 className="map-key-wrapper"
                 style={{
                     left: isMobile
-                        ? 'calc(100% - 230px)'                      // Mobile: always 20px
+                        ? 'calc(100% - 220px)'                      // Mobile: always 20px
                         : panelVisible
                             ? '330px'                  // Desktop + panel open
                             : '10px',                  // Desktop + panel closed

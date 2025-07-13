@@ -2,6 +2,8 @@ import { useState, useRef } from 'react';
 
 import { Button, IconButton } from '@mui/material';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 
 import MapComponent from '../components/MapComponent'
 import SidePanel from '../components/SidePanel'
@@ -10,8 +12,13 @@ import InfoCard from '../components/InfoCard'
 const HomePage = () => {
     const [selectedGarden, setSelectedGarden] = useState(null);
 
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
     // Optionally track a reset counter
     const [resetSignal, setResetSignal] = useState(0);
+
+    const [isPanelOpen, setIsPanelOpen] = useState(true)
 
     const handleReset = () => {
         setSelectedGarden(null);
@@ -51,15 +58,18 @@ const HomePage = () => {
                     selectedGarden={selectedGarden}
                     setSelectedGarden={setSelectedGarden}
                     resetSignal={resetSignal}
+                    isPanelOpen={isPanelOpen}
                 />
 
                 <div >
-                    <SidePanel
-                        selectedGarden={selectedGarden}
-                        setSelectedGarden={setSelectedGarden}
-                        resetSignal={resetSignal}
-                    />
-                    {/* <MapKey /> */}
+                    {(!isMobile || !selectedGarden) && (
+                        <SidePanel
+                            selectedGarden={selectedGarden}
+                            setSelectedGarden={setSelectedGarden}
+                            resetSignal={resetSignal}
+                            setIsPanelOpen={setIsPanelOpen}
+                        />
+                    )}
                 </div>
 
                 <div className="info-card-container">

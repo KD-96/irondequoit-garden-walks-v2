@@ -10,8 +10,9 @@ import LayersIcon from '@mui/icons-material/Layers';
 import MapLayers from './MapLayers';
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoia2FzdW4wMDEiLCJhIjoiY202bms5b2p3MHgwaTJrcTRmazV4a3k2MyJ9.2fPU4RjLDqtvsiEBdAH3Tw';
+// mapboxgl.accessToken = 'pk.eyJ1IjoiaWd3Y2hlbm5pbmciLCJhIjoiY203anlyZG1nMDF0MzJ2cHh0ZG82dDNseiJ9.qRng6e2eIFckJ8pi5twy3A'
 
-const MapComponent = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
+const MapComponent = ({ selectedGarden, setSelectedGarden, resetSignal, isPanelOpen }) => {
     const mapContainerRef = useRef(null);
     const mapRef = useRef(null);
     const { gardens, fetchGardens } = useGardenStore();
@@ -52,6 +53,14 @@ const MapComponent = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
     };
 
     useEffect(() => {
+        if (mapRef.current) {
+            setTimeout(() => {
+                mapRef.current.resize(); // Ensure layout is recalculated after CSS transition
+            }, 300); // Delay a bit if you have transitions or animations
+        }
+    }, [isPanelOpen]);
+
+    useEffect(() => {
         if (mapRef.current) return;
 
         mapRef.current = new mapboxgl.Map({
@@ -75,12 +84,25 @@ const MapComponent = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
 
         const map = mapRef.current;
 
+        const isMobile = window.innerWidth <= 768;
+
+        // Default center
+        const baseCenter = [-77.620, 43.227];
+
+        // Offset the longitude if not on mobile (shift map to the right to account for sidebar)
+        const adjustedCenter = isMobile
+            ? [baseCenter[0] + 0.02, baseCenter[1]]
+            : baseCenter;
+
+        console.log(adjustedCenter);
+
+
         map.flyTo({
-            center: [-77.620, 43.227], // ✅ Replace with your actual default center
-            zoom: 12,                // ✅ Replace with your actual default zoom
+            center: adjustedCenter,
+            zoom: 12,
             speed: 1.2,
             curve: 1.4,
-            essential: true
+            essential: true,
         });
     }, [resetSignal]);
 
@@ -222,13 +244,29 @@ const MapComponent = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
                     (err, zoom) => {
                         if (err) return;
 
-                        // 💡 Shift center 150px to the left
-                        const point = mapRef.current.project(coordinates);
-                        point.x -= 100; // shift left (adjust pixel value as needed)
-                        const shiftedLngLat = mapRef.current.unproject(point);
+                        // // 💡 Shift center 150px to the left
+                        // const point = mapRef.current.project(coordinates);
+                        // point.x -= 100; // shift left (adjust pixel value as needed)
+                        // const shiftedLngLat = mapRef.current.unproject(point);
+
+                        // mapRef.current.easeTo({
+                        //     center: shiftedLngLat,
+                        //     zoom: zoom,
+                        //     duration: 500,
+                        // });
+
+                        const center = features[0].geometry.coordinates;
+
+                        // ✅ Check screen width
+                        const isMobile = window.innerWidth <= 768;
 
                         mapRef.current.easeTo({
-                            center: shiftedLngLat,
+                            center: isMobile
+                                ? center // 👉 no offset for mobile
+                                : [
+                                    center[0] - 0.0055, // adjust X offset (lng) for desktop
+                                    center[1]
+                                ],
                             zoom: zoom,
                             duration: 500,
                         });
@@ -339,7 +377,9 @@ const MapComponent = ({ selectedGarden, setSelectedGarden, resetSignal }) => {
     }, [selectedGarden]);
 
     return (
-        <div ref={mapContainerRef} className="mapbox-map">
+        <div ref={mapContainerRef}
+            className={`mapbox-map ${isPanelOpen === false ? 'full-height' : ''}`}
+        >
             {isMapReady && <MapLayers map={mapRef.current} />}
 
             <Button
