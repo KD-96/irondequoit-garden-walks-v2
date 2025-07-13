@@ -15,11 +15,16 @@ const firebaseConfig = {
 
 const firebaseApp = initializeApp(firebaseConfig);
 
-// ✅ App Check must be initialized BEFORE any Firebase service is used!
-const appCheck = initializeAppCheck(firebaseApp, {
-    provider: new ReCaptchaV3Provider('YOUR_RECAPTCHA_SITE_KEY'),
-    isTokenAutoRefreshEnabled: true,
-});
+// const appCheck = initializeAppCheck(firebaseApp, {
+//     provider: new ReCaptchaV3Provider('6LcBi4ErAAAAABqSxJWRq1HPt7DN9cVFvTz7UDfO'),
+//     isTokenAutoRefreshEnabled: true,
+// });
+
+// getToken(appCheck, /* forceRefresh */ true).then(token => {
+//     console.log('App Check Token:', token);
+// }).catch(err => {
+//     console.error('App Check token error:', err);
+// });
 
 // ✅ Now initialize Firestore and Storage
 const db = getFirestore(firebaseApp);
