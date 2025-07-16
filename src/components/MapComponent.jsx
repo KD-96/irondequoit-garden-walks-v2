@@ -3,14 +3,14 @@ import mapboxgl from 'mapbox-gl';
 import useGardenStore from '../store/gardenStore';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import {
-    Box, Chip, IconButton, Popover, FormGroup, FormControlLabel, Checkbox, Button
+    Popover, FormGroup, FormControlLabel, Checkbox, Button
 } from '@mui/material';
 import LayersIcon from '@mui/icons-material/Layers';
 
 import MapLayers from './MapLayers';
 
-mapboxgl.accessToken = 'pk.eyJ1Ijoia2FzdW4wMDEiLCJhIjoiY202bms5b2p3MHgwaTJrcTRmazV4a3k2MyJ9.2fPU4RjLDqtvsiEBdAH3Tw';
-// mapboxgl.accessToken = 'pk.eyJ1IjoiaWd3Y2hlbm5pbmciLCJhIjoiY203anlyZG1nMDF0MzJ2cHh0ZG82dDNseiJ9.qRng6e2eIFckJ8pi5twy3A'
+// mapboxgl.accessToken = 'pk.eyJ1Ijoia2FzdW4wMDEiLCJhIjoiY202bms5b2p3MHgwaTJrcTRmazV4a3k2MyJ9.2fPU4RjLDqtvsiEBdAH3Tw';
+mapboxgl.accessToken = 'pk.eyJ1IjoiaWd3Y2hlbm5pbmciLCJhIjoiY203anlyZG1nMDF0MzJ2cHh0ZG82dDNseiJ9.qRng6e2eIFckJ8pi5twy3A';
 
 const MapComponent = ({ selectedGarden, setSelectedGarden, resetSignal, isPanelOpen }) => {
     const mapContainerRef = useRef(null);
@@ -65,7 +65,7 @@ const MapComponent = ({ selectedGarden, setSelectedGarden, resetSignal, isPanelO
 
         mapRef.current = new mapboxgl.Map({
             container: mapContainerRef.current,
-            style: 'mapbox://styles/kasun001/cmcfsvrwg000k01r00zb9e7zc',
+            style: 'mapbox://styles/igwchenning/cmd5v97hr01f001sb931i9cpk',
             center: [-77.620, 43.227],
             zoom: 12,
         });
@@ -79,31 +79,45 @@ const MapComponent = ({ selectedGarden, setSelectedGarden, resetSignal, isPanelO
         fetchGardens();
     }, []);
 
-    useEffect(() => {
-        if (!mapRef.current) return;
+    const fitMapToGardens = (shiftLeft = false) => {
+        if (!mapRef.current || !gardens.length) return;
 
-        const map = mapRef.current;
+        const bounds = new mapboxgl.LngLatBounds();
 
+        gardens.forEach(garden => {
+            const { latitude, longitude } = garden.location;
+            bounds.extend([longitude, latitude]);
+        });
+
+        // If screen is desktop and shiftLeft is true, calculate offset center
         const isMobile = window.innerWidth <= 768;
 
-        // Default center
-        const baseCenter = [-77.620, 43.227];
+        const options = {
+            padding: 40,
+            maxZoom: 16,
+            duration: 1000,
+        };
 
-        // Offset the longitude if not on mobile (shift map to the right to account for sidebar)
-        const adjustedCenter = isMobile
-            ? [baseCenter[0] + 0.02, baseCenter[1]]
-            : baseCenter;
+        if (!isMobile && shiftLeft) {
+            const center = bounds.getCenter();
+            const shiftedCenter = [center.lng - 0.04, center.lat]; // Adjust the shift as needed
 
-        console.log(adjustedCenter);
+            mapRef.current.flyTo({
+                center: shiftedCenter,
+                zoom: 12,
+                speed: 1.2,
+                curve: 1.4,
+                essential: true,
+            });
+        } else {
+            mapRef.current.fitBounds(bounds, options);
+        }
+    };
 
-
-        map.flyTo({
-            center: adjustedCenter,
-            zoom: 12,
-            speed: 1.2,
-            curve: 1.4,
-            essential: true,
-        });
+    useEffect(() => {
+        setTimeout(() => {
+            fitMapToGardens(true);
+        }, 500); // delay to wait for gardens
     }, [resetSignal]);
 
     useEffect(() => {
@@ -113,6 +127,8 @@ const MapComponent = ({ selectedGarden, setSelectedGarden, resetSignal, isPanelO
 
         const map = mapRef.current;
         const popupRef = new mapboxgl.Popup({ closeOnClick: true });
+
+        fitMapToGardens(true);
 
         // Click handler
         const handleClick = (e) => {
@@ -124,7 +140,7 @@ const MapComponent = ({ selectedGarden, setSelectedGarden, resetSignal, isPanelO
             if (!garden) return;
 
             // Zoom to the feature
-            map.flyTo({ center: coordinates, zoom: 14 });
+            map.flyTo({ center: coordinates, zoom: 16 });
 
             // Show popup
             popupRef
@@ -244,17 +260,6 @@ const MapComponent = ({ selectedGarden, setSelectedGarden, resetSignal, isPanelO
                     (err, zoom) => {
                         if (err) return;
 
-                        // // 💡 Shift center 150px to the left
-                        // const point = mapRef.current.project(coordinates);
-                        // point.x -= 100; // shift left (adjust pixel value as needed)
-                        // const shiftedLngLat = mapRef.current.unproject(point);
-
-                        // mapRef.current.easeTo({
-                        //     center: shiftedLngLat,
-                        //     zoom: zoom,
-                        //     duration: 500,
-                        // });
-
                         const center = features[0].geometry.coordinates;
 
                         // ✅ Check screen width
@@ -349,7 +354,7 @@ const MapComponent = ({ selectedGarden, setSelectedGarden, resetSignal, isPanelO
             // Fly to the selected garden
             map.flyTo({
                 center: lngLat,
-                zoom: 20,
+                zoom: 16,
                 speed: 1.2,
                 curve: 1.4,
             });

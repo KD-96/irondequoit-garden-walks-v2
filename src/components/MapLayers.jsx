@@ -25,21 +25,21 @@ const MapLayers = ({ map }) => {
         if (!map.getSource(neighborhoodSourceId)) {
             map.addSource(neighborhoodSourceId, {
                 type: 'vector',
-                url: 'mapbox://kasun001.cmcbu5vaz00191oo77ujgdhmv-32do0',
+                url: 'mapbox://igwchenning.cmd5vhd041y4w1pmve16mviss-5na1r',
             });
         }
 
         if (!map.getSource(bikeSourceId)) {
             map.addSource(bikeSourceId, {
                 type: 'vector',
-                url: 'mapbox://kasun001.cmcbyze5u02vh1nqmjq3kfid1-5eye4',
+                url: 'mapbox://igwchenning.cmd5vesyy03cy1ppkvuxjkey7-8trbp',
             });
         }
 
         if (!map.getSource(pBikeSourceId)) {
             map.addSource(pBikeSourceId, {
                 type: 'vector',
-                url: 'mapbox://kasun001.cmcc2jwla005s1ppkxiqtorhd-53ecm',
+                url: 'mapbox://igwchenning.cmd5vipxv0ome1nm2xr0gatis-3w5zo',
             });
         }
 
