@@ -496,7 +496,7 @@ const SidePanel = ({ selectedGarden, setSelectedGarden, resetSignal, setIsPanelO
                 className="map-key-wrapper"
                 style={{
                     left: isMobile
-                        ? 'calc(100% - 220px)'                      // Mobile: always 20px
+                        ? 'calc(100% - 260px)'                      // Mobile: always 20px
                         : panelVisible
                             ? '330px'                  // Desktop + panel open
                             : '10px',                  // Desktop + panel closed

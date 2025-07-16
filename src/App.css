@@ -27,7 +27,7 @@
   z-index: 100;
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 600px) {
   .home-page-container {
     height: 100dvh;
   }
@@ -40,7 +40,7 @@
   height: 100%;
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 600px) {
   .mapbox-map {
     height: 51dvh;
   }
@@ -144,7 +144,7 @@
   font-family: "Roboto", sans-serif;
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 600px) {
   .map-key-box {
     width: 210px;
   }
@@ -206,7 +206,7 @@
 }
 
 /* Responsive behavior on small screens */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 600px) {
   .side-panel-container {
     top: auto;
     left: 0;
@@ -266,7 +266,7 @@
   right: 10px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .info-card-wrapper {
     position: fixed;
     left: 0;
