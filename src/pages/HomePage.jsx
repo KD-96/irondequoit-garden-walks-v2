@@ -1,93 +1,124 @@
-import { useState, useRef } from 'react';
+import { useState, useRef } from "react";
 
-import { Button, IconButton } from '@mui/material';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import { useTheme } from '@mui/material/styles';
+import { Button, IconButton } from "@mui/material";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 
-import MapComponent from '../components/MapComponent'
-import SidePanel from '../components/SidePanel'
-import InfoCard from '../components/InfoCard'
+import MapComponent from "../components/MapComponent";
+import SidePanel from "../components/SidePanel";
+import InfoCard from "../components/InfoCard";
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+import MyRoutePopup from "../components/MyRoutePopup";
+import useGardenStore from "../store/gardenStore";
 
 const HomePage = () => {
-    const [selectedGarden, setSelectedGarden] = useState(null);
+  const [selectedGarden, setSelectedGarden] = useState(null);
 
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-    // Optionally track a reset counter
-    const [resetSignal, setResetSignal] = useState(0);
+  // Optionally track a reset counter
+  const [resetSignal, setResetSignal] = useState(0);
 
-    const [isPanelOpen, setIsPanelOpen] = useState(true)
+  const [isPanelOpen, setIsPanelOpen] = useState(true);
 
-    const handleReset = () => {
-        setSelectedGarden(null);
-        setResetSignal(prev => prev + 1); // To notify child components
-    };
+  const [isRouteOpen, setIsRouteOpen] = useState(false);
 
-    const handleNav = () => {
-        navigate('/admin')
-    }
-    // https://irondequoit-garden-walks-v2.vercel.app/admin
-    return (
-        <div className="home-page-container">
-            <div className="map-container">
+  const { gardens } = useGardenStore();
 
-                <Button
-                    variant="contained"
-                    startIcon={<RestartAltIcon />}
-                    onClick={handleReset}
-                    title='Reset all changes'
-                    sx={{
-                        width: '100px',
-                        position: 'absolute',
-                        top: 150,
-                        right: 5,
-                        zIndex: 10,
-                        bgcolor: 'white',
-                        color: '#ff8585',
-                        boxShadow: 1,
-                        textTransform: 'none',
-                        fontWeight: 500,
-                        fontSize: '0.875rem',
-                        '&:hover': {
-                            bgcolor: '#ebebeb',
-                        },
-                    }}
-                >
-                    Reset
-                </Button>
+  const handleReset = () => {
+    setSelectedGarden(null);
+    setResetSignal((prev) => prev + 1); // To notify child components
+  };
 
-                <MapComponent
-                    selectedGarden={selectedGarden}
-                    setSelectedGarden={setSelectedGarden}
-                    resetSignal={resetSignal}
-                    isPanelOpen={isPanelOpen}
-                />
+  const handleNav = () => {
+    navigate("/admin");
+  };
+  // https://irondequoit-garden-walks-v2.vercel.app/admin
+  return (
+    <div className="home-page-container">
+      <div className="map-container">
+        <MyRoutePopup
+          open={isRouteOpen}
+          onClose={() => setIsRouteOpen(false)}
+          gardens={gardens}
+        />
 
-                <div >
-                    {(!isMobile || !selectedGarden) && (
-                        <SidePanel
-                            selectedGarden={selectedGarden}
-                            setSelectedGarden={setSelectedGarden}
-                            resetSignal={resetSignal}
-                            setIsPanelOpen={setIsPanelOpen}
-                        />
-                    )}
-                </div>
+        <Button
+          variant="contained"
+          onClick={() => setIsRouteOpen(true)}
+          sx={{
+            width: "100px",
+            position: "absolute",
+            top: 240,
+            right: 5,
+            zIndex: 10,
+            bgcolor: "white",
+            color: "#333",
+            boxShadow: 1,
+            textTransform: "none",
+            "&:hover": {
+              bgcolor: "#ebebeb",
+            },
+          }}
+        >
+          My Route
+        </Button>
 
-                <div className="info-card-container">
-                    <InfoCard
-                        garden={selectedGarden}
-                        onClose={() => setSelectedGarden(null)}
-                    />
-                </div>
+        <Button
+          variant="contained"
+          startIcon={<RestartAltIcon />}
+          onClick={handleReset}
+          title="Reset all changes"
+          sx={{
+            width: "100px",
+            position: "absolute",
+            top: 150,
+            right: 5,
+            zIndex: 10,
+            bgcolor: "white",
+            color: "#ff8585",
+            boxShadow: 1,
+            textTransform: "none",
+            fontWeight: 500,
+            fontSize: "0.875rem",
+            "&:hover": {
+              bgcolor: "#ebebeb",
+            },
+          }}
+        >
+          Reset
+        </Button>
 
-            </div>
+        <MapComponent
+          selectedGarden={selectedGarden}
+          setSelectedGarden={setSelectedGarden}
+          resetSignal={resetSignal}
+          isPanelOpen={isPanelOpen}
+        />
+
+        <div>
+          {(!isMobile || !selectedGarden) && (
+            <SidePanel
+              selectedGarden={selectedGarden}
+              setSelectedGarden={setSelectedGarden}
+              resetSignal={resetSignal}
+              setIsPanelOpen={setIsPanelOpen}
+            />
+          )}
         </div>
-    )
-}
 
-export default HomePage
+        <div className="info-card-container">
+          <InfoCard
+            garden={selectedGarden}
+            onClose={() => setSelectedGarden(null)}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default HomePage;
