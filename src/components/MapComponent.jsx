@@ -1,445 +1,533 @@
-import { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import useGardenStore from '../store/gardenStore';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import { useEffect, useRef, useState } from "react";
+import mapboxgl from "mapbox-gl";
+import useGardenStore from "../store/gardenStore";
+import "mapbox-gl/dist/mapbox-gl.css";
 import {
-    Popover, FormGroup, FormControlLabel, Checkbox, Button
-} from '@mui/material';
-import LayersIcon from '@mui/icons-material/Layers';
+  Popover,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
+  Button,
+} from "@mui/material";
+import LayersIcon from "@mui/icons-material/Layers";
+import MyLocationIcon from "@mui/icons-material/MyLocation";
 
-import MapLayers from './MapLayers';
+import MapLayers from "./MapLayers";
 
 // mapboxgl.accessToken = 'pk.eyJ1Ijoia2FzdW4wMDEiLCJhIjoiY202bms5b2p3MHgwaTJrcTRmazV4a3k2MyJ9.2fPU4RjLDqtvsiEBdAH3Tw';
-mapboxgl.accessToken = 'pk.eyJ1IjoiaWd3Y2hlbm5pbmciLCJhIjoiY203anlyZG1nMDF0MzJ2cHh0ZG82dDNseiJ9.qRng6e2eIFckJ8pi5twy3A';
+mapboxgl.accessToken =
+  "pk.eyJ1IjoiaWd3Y2hlbm5pbmciLCJhIjoiY203anlyZG1nMDF0MzJ2cHh0ZG82dDNseiJ9.qRng6e2eIFckJ8pi5twy3A";
 
-const MapComponent = ({ selectedGarden, setSelectedGarden, resetSignal, isPanelOpen }) => {
-    const mapContainerRef = useRef(null);
-    const mapRef = useRef(null);
-    const { gardens, fetchGardens } = useGardenStore();
-    const selectedFeatureIdRef = useRef(null);
-    const selectedMarkerRef = useRef(null);
+const MapComponent = ({
+  selectedGarden,
+  setSelectedGarden,
+  resetSignal,
+  isPanelOpen,
+}) => {
+  const mapContainerRef = useRef(null);
+  const mapRef = useRef(null);
+  const { gardens, fetchGardens } = useGardenStore();
+  const selectedFeatureIdRef = useRef(null);
+  const selectedMarkerRef = useRef(null);
 
-    const [isMapReady, setIsMapReady] = useState(false);
+  const [isMapReady, setIsMapReady] = useState(false);
 
-    const [layerVisibility, setLayerVisibility] = useState({
-        bikeBoulevards: false,
-        protectedBikeTrails: false,
+  const [layerVisibility, setLayerVisibility] = useState({
+    bikeBoulevards: false,
+    protectedBikeTrails: false,
+  });
+
+  // ⛳️ Hooks should go here
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+
+  const handleToggleMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const toggleLayer = (layerKey) => {
+    const newVisibility = !layerVisibility[layerKey];
+    setLayerVisibility((prev) => ({ ...prev, [layerKey]: newVisibility }));
+
+    const mapboxLayerId = {
+      bikeBoulevards: "bike-boulevards-layer",
+      protectedBikeTrails: "protected-bike-trails-layer",
+    }[layerKey];
+
+    if (mapRef.current?.getLayer(mapboxLayerId)) {
+      mapRef.current.setLayoutProperty(
+        mapboxLayerId,
+        "visibility",
+        newVisibility ? "visible" : "none",
+      );
+    }
+  };
+
+  const userLocationMarkerRef = useRef(null);
+
+  const showUserLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lng = position.coords.longitude;
+        const lat = position.coords.latitude;
+
+        // Remove previous marker
+        if (userLocationMarkerRef.current) {
+          userLocationMarkerRef.current.remove();
+        }
+
+        // Create marker
+        userLocationMarkerRef.current = new mapboxgl.Marker({
+          color: "#1E88E5",
+        })
+          .setLngLat([lng, lat])
+          .addTo(mapRef.current);
+
+        // Zoom to user
+        mapRef.current.flyTo({
+          center: [lng, lat],
+          zoom: 15,
+          speed: 1.2,
+        });
+      },
+      (error) => {
+        console.error(error);
+
+        alert("Unable to retrieve your location.");
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      },
+    );
+  };
+
+  useEffect(() => {
+    if (mapRef.current) {
+      setTimeout(() => {
+        mapRef.current.resize(); // Ensure layout is recalculated after CSS transition
+      }, 300); // Delay a bit if you have transitions or animations
+    }
+  }, [isPanelOpen]);
+
+  useEffect(() => {
+    if (mapRef.current) return;
+
+    mapRef.current = new mapboxgl.Map({
+      container: mapContainerRef.current,
+      style: "mapbox://styles/igwchenning/cmd5v97hr01f001sb931i9cpk",
+      center: [-77.62, 43.227],
+      zoom: 12,
     });
 
-    // ⛳️ Hooks should go here
-    const [anchorEl, setAnchorEl] = useState(null);
-    const open = Boolean(anchorEl);
+    mapRef.current.addControl(new mapboxgl.NavigationControl(), "top-right");
 
-    const handleToggleMenu = (event) => {
-        setAnchorEl(event.currentTarget);
+    mapRef.current.on("load", () => {
+      setIsMapReady(true); // Only show layers after map is loaded
+    });
+
+    fetchGardens();
+  }, []);
+
+  const fitMapToGardens = (shiftLeft = false) => {
+    if (!mapRef.current || !gardens.length) return;
+
+    const bounds = new mapboxgl.LngLatBounds();
+
+    gardens.forEach((garden) => {
+      const { latitude, longitude } = garden.location;
+      bounds.extend([longitude, latitude]);
+    });
+
+    // If screen is desktop and shiftLeft is true, calculate offset center
+    const isMobile = window.innerWidth <= 768;
+
+    const options = {
+      padding: 40,
+      maxZoom: 16,
+      duration: 1000,
     };
 
-    const toggleLayer = (layerKey) => {
-        const newVisibility = !layerVisibility[layerKey];
-        setLayerVisibility((prev) => ({ ...prev, [layerKey]: newVisibility }));
+    if (!isMobile && shiftLeft) {
+      const center = bounds.getCenter();
+      const shiftedCenter = [center.lng - 0.04, center.lat]; // Adjust the shift as needed
 
-        const mapboxLayerId = {
-            bikeBoulevards: 'bike-boulevards-layer',
-            protectedBikeTrails: 'protected-bike-trails-layer',
-        }[layerKey];
+      mapRef.current.flyTo({
+        center: shiftedCenter,
+        zoom: 12,
+        speed: 1.2,
+        curve: 1.4,
+        essential: true,
+      });
+    } else {
+      mapRef.current.fitBounds(bounds, options);
+    }
+  };
 
-        if (mapRef.current?.getLayer(mapboxLayerId)) {
-            mapRef.current.setLayoutProperty(
-                mapboxLayerId,
-                'visibility',
-                newVisibility ? 'visible' : 'none'
-            );
-        }
+  useEffect(() => {
+    setTimeout(() => {
+      fitMapToGardens(true);
+    }, 500); // delay to wait for gardens
+  }, [resetSignal]);
+
+  useEffect(() => {
+    if (!mapRef.current || !gardens.length) return;
+
+    console.log(selectedGarden);
+
+    const map = mapRef.current;
+    const popupRef = new mapboxgl.Popup({ closeOnClick: true });
+
+    fitMapToGardens(true);
+
+    // Click handler
+    const handleClick = (e) => {
+      const feature = e.features[0];
+      const coordinates = feature.geometry.coordinates.slice();
+      const { mapNumber } = feature.properties;
+
+      const garden = gardens.find((g) => g.mapNumber === Number(mapNumber));
+      if (!garden) return;
+
+      // Zoom to the feature
+      map.flyTo({ center: coordinates, zoom: 16 });
+
+      // Show popup
+      popupRef
+        .setLngLat(coordinates)
+        .setHTML(`<strong>${garden.name || `Garden #${mapNumber}`}</strong>`)
+        .addTo(map);
+
+      // ✅ Set selected garden
+      setSelectedGarden(garden);
+
+      // ✅ Highlight circle filter (if used)
+      if (map.getLayer("selected-garden-circle")) {
+        map.setFilter("selected-garden-circle", ["==", "mapNumber", mapNumber]);
+      }
     };
 
-    useEffect(() => {
-        if (mapRef.current) {
-            setTimeout(() => {
-                mapRef.current.resize(); // Ensure layout is recalculated after CSS transition
-            }, 300); // Delay a bit if you have transitions or animations
+    // Set listener on circle layer
+    map.on("click", "garden-circles", handleClick);
+
+    map.on("click", (e) => {
+      const features = map.queryRenderedFeatures(e.point, {
+        layers: ["garden-circles"],
+      });
+
+      if (features.length === 0) {
+        selectedFeatureIdRef.current = null;
+
+        // ✅ Only attempt to filter if the layer exists
+        if (map.getLayer("selected-garden-circle")) {
+          map.setFilter("selected-garden-circle", ["==", "mapNumber", ""]);
         }
-    }, [isPanelOpen]);
 
-    useEffect(() => {
-        if (mapRef.current) return;
+        popupRef.remove();
+      }
+    });
 
-        mapRef.current = new mapboxgl.Map({
-            container: mapContainerRef.current,
-            style: 'mapbox://styles/igwchenning/cmd5v97hr01f001sb931i9cpk',
-            center: [-77.620, 43.227],
-            zoom: 12,
-        });
+    // Change cursor style on hover
+    map.on("mouseenter", "garden-circles", () => {
+      map.getCanvas().style.cursor = "pointer";
+    });
+    map.on("mouseleave", "garden-circles", () => {
+      map.getCanvas().style.cursor = "";
+    });
 
-        mapRef.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-        mapRef.current.on('load', () => {
-            setIsMapReady(true); // Only show layers after map is loaded
-        });
-
-        fetchGardens();
-    }, []);
-
-    const fitMapToGardens = (shiftLeft = false) => {
-        if (!mapRef.current || !gardens.length) return;
-
-        const bounds = new mapboxgl.LngLatBounds();
-
-        gardens.forEach(garden => {
-            const { latitude, longitude } = garden.location;
-            bounds.extend([longitude, latitude]);
-        });
-
-        // If screen is desktop and shiftLeft is true, calculate offset center
-        const isMobile = window.innerWidth <= 768;
-
-        const options = {
-            padding: 40,
-            maxZoom: 16,
-            duration: 1000,
-        };
-
-        if (!isMobile && shiftLeft) {
-            const center = bounds.getCenter();
-            const shiftedCenter = [center.lng - 0.04, center.lat]; // Adjust the shift as needed
-
-            mapRef.current.flyTo({
-                center: shiftedCenter,
-                zoom: 12,
-                speed: 1.2,
-                curve: 1.4,
-                essential: true,
-            });
-        } else {
-            mapRef.current.fitBounds(bounds, options);
-        }
+    // Convert gardens to GeoJSON
+    const geojson = {
+      type: "FeatureCollection",
+      features: gardens
+        .filter((g) => g.location?._lat && g.location?._long)
+        .map((garden) => ({
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: [garden.location._long, garden.location._lat],
+          },
+          properties: {
+            mapNumber: garden.mapNumber,
+            name: garden.name,
+            group: garden.group,
+          },
+        })),
     };
 
-    useEffect(() => {
-        setTimeout(() => {
-            fitMapToGardens(true);
-        }, 500); // delay to wait for gardens
-    }, [resetSignal]);
+    // Add source and layer
+    if (mapRef.current.getSource("gardens")) {
+      mapRef.current.getSource("gardens").setData(geojson);
+    } else {
+      mapRef.current.addSource("gardens", {
+        type: "geojson",
+        data: geojson,
+        cluster: true,
+        clusterMaxZoom: 14, // Max zoom to cluster points
+        clusterRadius: 20, // Radius of each cluster (in pixels)
+      });
 
-    useEffect(() => {
-        if (!mapRef.current || !gardens.length) return;
+      mapRef.current.addLayer({
+        id: "clusters",
+        type: "circle",
+        source: "gardens",
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": "black",
+          "circle-radius": ["step", ["get", "point_count"], 10, 3, 14, 12, 18],
+        },
+      });
 
-        console.log(selectedGarden);
+      mapRef.current.addLayer({
+        id: "cluster-count",
+        type: "symbol",
+        source: "gardens",
+        filter: ["has", "point_count"],
+        layout: {
+          "text-field": "{point_count_abbreviated}",
+          "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+          "text-size": 12,
+        },
+        paint: {
+          "text-color": "#fff",
+        },
+      });
 
-        const map = mapRef.current;
-        const popupRef = new mapboxgl.Popup({ closeOnClick: true });
-
-        fitMapToGardens(true);
-
-        // Click handler
-        const handleClick = (e) => {
-            const feature = e.features[0];
-            const coordinates = feature.geometry.coordinates.slice();
-            const { mapNumber } = feature.properties;
-
-            const garden = gardens.find((g) => g.mapNumber === Number(mapNumber));
-            if (!garden) return;
-
-            // Zoom to the feature
-            map.flyTo({ center: coordinates, zoom: 16 });
-
-            // Show popup
-            popupRef
-                .setLngLat(coordinates)
-                .setHTML(`<strong>${garden.name || `Garden #${mapNumber}`}</strong>`)
-                .addTo(map);
-
-            // ✅ Set selected garden
-            setSelectedGarden(garden);
-
-            // ✅ Highlight circle filter (if used)
-            if (map.getLayer('selected-garden-circle')) {
-                map.setFilter('selected-garden-circle', ['==', 'mapNumber', mapNumber]);
-            }
-        };
-
-        // Set listener on circle layer
-        map.on('click', 'garden-circles', handleClick);
-
-        map.on('click', (e) => {
-            const features = map.queryRenderedFeatures(e.point, {
-                layers: ['garden-circles'],
-            });
-
-            if (features.length === 0) {
-                selectedFeatureIdRef.current = null;
-
-                // ✅ Only attempt to filter if the layer exists
-                if (map.getLayer('selected-garden-circle')) {
-                    map.setFilter('selected-garden-circle', ['==', 'mapNumber', '']);
-                }
-
-                popupRef.remove();
-            }
+      mapRef.current.on("click", "clusters", (e) => {
+        const features = mapRef.current.queryRenderedFeatures(e.point, {
+          layers: ["clusters"],
         });
 
+        const clusterId = features[0].properties.cluster_id;
+        const coordinates = features[0].geometry.coordinates;
 
-        // Change cursor style on hover
-        map.on('mouseenter', 'garden-circles', () => {
-            map.getCanvas().style.cursor = 'pointer';
-        });
-        map.on('mouseleave', 'garden-circles', () => {
-            map.getCanvas().style.cursor = '';
-        });
+        mapRef.current
+          .getSource("gardens")
+          .getClusterExpansionZoom(clusterId, (err, zoom) => {
+            if (err) return;
 
-        // Convert gardens to GeoJSON
-        const geojson = {
-            type: 'FeatureCollection',
-            features: gardens
-                .filter(g => g.location?._lat && g.location?._long)
-                .map(garden => ({
-                    type: 'Feature',
-                    geometry: {
-                        type: 'Point',
-                        coordinates: [garden.location._long, garden.location._lat],
-                    },
-                    properties: {
-                        mapNumber: garden.mapNumber,
-                        name: garden.name,
-                        group: garden.group
-                    },
-                })),
-        };
+            const center = features[0].geometry.coordinates;
 
-        // Add source and layer
-        if (mapRef.current.getSource('gardens')) {
-            mapRef.current.getSource('gardens').setData(geojson);
-        } else {
-            mapRef.current.addSource('gardens', {
-                type: 'geojson',
-                data: geojson,
-                cluster: true,
-                clusterMaxZoom: 14, // Max zoom to cluster points
-                clusterRadius: 20,  // Radius of each cluster (in pixels)
+            // ✅ Check screen width
+            const isMobile = window.innerWidth <= 768;
+
+            mapRef.current.easeTo({
+              center: isMobile
+                ? center // 👉 no offset for mobile
+                : [
+                    center[0] - 0.0055, // adjust X offset (lng) for desktop
+                    center[1],
+                  ],
+              zoom: zoom,
+              duration: 500,
             });
+          });
+      });
 
-            mapRef.current.addLayer({
-                id: 'clusters',
-                type: 'circle',
-                source: 'gardens',
-                filter: ['has', 'point_count'],
-                paint: {
-                    'circle-color': 'black',
-                    'circle-radius': [
-                        'step',
-                        ['get', 'point_count'],
-                        10, 3, 14, 12, 18
-                    ],
-                }
-            });
+      mapRef.current.addLayer({
+        id: "garden-points",
+        type: "symbol",
+        source: "gardens",
+        layout: {
+          "text-field": ["get", "mapNumber"],
+          "text-size": 12,
+          "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+          "text-offset": [0, -0.65],
+          "text-anchor": "top",
+          "text-allow-overlap": false, // ✅ let Mapbox hide overlapping text
+        },
+        paint: {
+          "text-color": "#fff",
+          "text-halo-color": "#3e8448",
+          "text-halo-width": 2,
+        },
+      });
 
-            mapRef.current.addLayer({
-                id: 'cluster-count',
-                type: 'symbol',
-                source: 'gardens',
-                filter: ['has', 'point_count'],
-                layout: {
-                    'text-field': '{point_count_abbreviated}',
-                    'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-                    'text-size': 12
-                },
-                paint: {
-                    'text-color': '#fff'
-                }
-            });
+      // Add background circle (separate layer if needed)
+      mapRef.current.addLayer(
+        {
+          id: "garden-circles",
+          type: "circle",
+          source: "gardens",
+          filter: ["!", ["has", "point_count"]],
+          paint: {
+            // Shrink circles more aggressively at low zoom levels
+            "circle-radius": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              8,
+              2, // ✅ dot at zoom 8
+              10,
+              5, // smaller than before
+              14,
+              10,
+              16,
+              12,
+            ],
+            "circle-color": [
+              "match",
+              ["get", "group"],
+              "Residential",
+              "#00a025",
+              "Community",
+              "#119cff",
+              "Welcome Center",
+              "#ffd415",
+              "#999999",
+            ],
+            "circle-stroke-width": 1,
+            "circle-stroke-color": "#fff",
+          },
+        },
+        "garden-points",
+      );
+    }
 
-            mapRef.current.on('click', 'clusters', (e) => {
-                const features = mapRef.current.queryRenderedFeatures(e.point, {
-                    layers: ['clusters'],
-                });
+    // Cleanup
+    return () => {
+      map.off("click", "garden-circles", handleClick);
+      popupRef.remove();
+    };
+  }, [gardens, selectedGarden]);
 
-                const clusterId = features[0].properties.cluster_id;
-                const coordinates = features[0].geometry.coordinates;
+  useEffect(() => {
+    if (!mapRef.current) return;
 
-                mapRef.current.getSource('gardens').getClusterExpansionZoom(
-                    clusterId,
-                    (err, zoom) => {
-                        if (err) return;
+    const map = mapRef.current;
 
-                        const center = features[0].geometry.coordinates;
+    // Update filter on highlight circle layer
+    if (map.getLayer("selected-garden-circle")) {
+      const mapNumber = selectedGarden?.mapNumber ?? "";
+      map.setFilter("selected-garden-circle", ["==", "mapNumber", mapNumber]);
+    }
 
-                        // ✅ Check screen width
-                        const isMobile = window.innerWidth <= 768;
+    // ✅ Check and use lngLat properly
+    if (selectedGarden?.location?._lat && selectedGarden?.location?._long) {
+      const lngLat = [
+        selectedGarden.location._long,
+        selectedGarden.location._lat,
+      ]; // ✅ FIXED: define lngLat here
 
-                        mapRef.current.easeTo({
-                            center: isMobile
-                                ? center // 👉 no offset for mobile
-                                : [
-                                    center[0] - 0.0055, // adjust X offset (lng) for desktop
-                                    center[1]
-                                ],
-                            zoom: zoom,
-                            duration: 500,
-                        });
-                    }
-                );
-            });
+      // Fly to the selected garden
+      map.flyTo({
+        center: lngLat,
+        zoom: 16,
+        speed: 1.2,
+        curve: 1.4,
+      });
 
-            mapRef.current.addLayer({
-                id: 'garden-points',
-                type: 'symbol',
-                source: 'gardens',
-                layout: {
-                    'text-field': ['get', 'mapNumber'],
-                    'text-size': 12,
-                    'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-                    'text-offset': [0, -0.65],
-                    'text-anchor': 'top',
-                    'text-allow-overlap': false, // ✅ let Mapbox hide overlapping text
-                },
-                paint: {
-                    'text-color': '#fff',
-                    'text-halo-color': '#3e8448',
-                    'text-halo-width': 2,
-                },
-            });
+      // Remove previous pulsing marker
+      if (selectedMarkerRef.current) {
+        selectedMarkerRef.current.remove();
+      }
 
-            // Add background circle (separate layer if needed)
-            mapRef.current.addLayer({
-                id: 'garden-circles',
-                type: 'circle',
-                source: 'gardens',
-                filter: ['!', ['has', 'point_count']],
-                paint: {
-                    // Shrink circles more aggressively at low zoom levels
-                    'circle-radius': [
-                        'interpolate',
-                        ['linear'],
-                        ['zoom'],
-                        8, 2,      // ✅ dot at zoom 8
-                        10, 5,     // smaller than before
-                        14, 10,
-                        16, 12
-                    ],
-                    'circle-color': [
-                        'match',
-                        ['get', 'group'],
-                        'Residential', '#00a025',
-                        'Community', '#119cff',
-                        'Welcome Center', '#ffd415',
-                        '#999999'
-                    ],
-                    'circle-stroke-width': 1,
-                    'circle-stroke-color': '#fff',
-                },
-            }, 'garden-points')
-        }
+      // Create new pulsing dot element
+      const el = document.createElement("div");
+      el.className = "pulsing-dot";
 
-        // Cleanup
-        return () => {
-            map.off('click', 'garden-circles', handleClick);
-            popupRef.remove();
-        };
-    }, [gardens, selectedGarden]);
+      // Add the pulsing marker
+      selectedMarkerRef.current = new mapboxgl.Marker({ element: el })
+        .setLngLat(lngLat)
+        .addTo(map);
+    } else {
+      // Remove pulsing marker if deselected
+      if (selectedMarkerRef.current) {
+        selectedMarkerRef.current.remove();
+        selectedMarkerRef.current = null;
+      }
+    }
+  }, [selectedGarden]);
 
-    useEffect(() => {
-        if (!mapRef.current) return;
+  return (
+    <div
+      ref={mapContainerRef}
+      className={`mapbox-map ${isPanelOpen === false ? "full-height" : ""}`}
+    >
+      {isMapReady && <MapLayers map={mapRef.current} />}
 
-        const map = mapRef.current;
+      <Button
+        onClick={handleToggleMenu}
+        sx={{
+          width: "100px",
+          position: "absolute",
+          top: 105,
+          right: 5,
+          zIndex: 10,
+          bgcolor: "white",
+          color: "#7f7f7f",
+          boxShadow: 1,
+          textTransform: "none",
+          fontWeight: 500,
+          fontSize: "0.875rem",
+          "&:hover": {
+            bgcolor: "#ebebeb",
+          },
+        }}
+        title="Toggle layers"
+      >
+        <LayersIcon /> Layers
+      </Button>
 
-        // Update filter on highlight circle layer
-        if (map.getLayer('selected-garden-circle')) {
-            const mapNumber = selectedGarden?.mapNumber ?? '';
-            map.setFilter('selected-garden-circle', ['==', 'mapNumber', mapNumber]);
-        }
-
-        // ✅ Check and use lngLat properly
-        if (selectedGarden?.location?._lat && selectedGarden?.location?._long) {
-            const lngLat = [selectedGarden.location._long, selectedGarden.location._lat]; // ✅ FIXED: define lngLat here
-
-            // Fly to the selected garden
-            map.flyTo({
-                center: lngLat,
-                zoom: 16,
-                speed: 1.2,
-                curve: 1.4,
-            });
-
-            // Remove previous pulsing marker
-            if (selectedMarkerRef.current) {
-                selectedMarkerRef.current.remove();
+      {/* 🌐 Popover for layer toggles */}
+      <Popover
+        open={open}
+        anchorEl={anchorEl}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <FormGroup sx={{ p: 2 }}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={layerVisibility.bikeBoulevards}
+                onChange={() => toggleLayer("bikeBoulevards")}
+              />
             }
-
-            // Create new pulsing dot element
-            const el = document.createElement('div');
-            el.className = 'pulsing-dot';
-
-            // Add the pulsing marker
-            selectedMarkerRef.current = new mapboxgl.Marker({ element: el })
-                .setLngLat(lngLat)
-                .addTo(map);
-        } else {
-            // Remove pulsing marker if deselected
-            if (selectedMarkerRef.current) {
-                selectedMarkerRef.current.remove();
-                selectedMarkerRef.current = null;
+            label="Bike Boulevards"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={layerVisibility.protectedBikeTrails}
+                onChange={() => toggleLayer("protectedBikeTrails")}
+              />
             }
-        }
-    }, [selectedGarden]);
+            label="Protected Bike Trails"
+          />
+        </FormGroup>
+      </Popover>
 
-    return (
-        <div ref={mapContainerRef}
-            className={`mapbox-map ${isPanelOpen === false ? 'full-height' : ''}`}
-        >
-            {isMapReady && <MapLayers map={mapRef.current} />}
-
-            <Button
-                onClick={handleToggleMenu}
-                sx={{
-                    width: '100px',
-                    position: 'absolute',
-                    top: 105,
-                    right: 5,
-                    zIndex: 10,
-                    bgcolor: 'white',
-                    color: '#7f7f7f',
-                    boxShadow: 1,
-                    textTransform: 'none',
-                    fontWeight: 500,
-                    fontSize: '0.875rem',
-                    '&:hover': {
-                        bgcolor: '#ebebeb',
-                    },
-                }}
-                title="Toggle layers"
-            >
-                <LayersIcon /> Layers
-            </Button>
-
-            {/* 🌐 Popover for layer toggles */}
-            <Popover
-                open={open}
-                anchorEl={anchorEl}
-                onClose={() => setAnchorEl(null)}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            >
-                <FormGroup sx={{ p: 2 }}>
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={layerVisibility.bikeBoulevards}
-                                onChange={() => toggleLayer('bikeBoulevards')}
-                            />
-                        }
-                        label="Bike Boulevards"
-                    />
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={layerVisibility.protectedBikeTrails}
-                                onChange={() => toggleLayer('protectedBikeTrails')}
-                            />
-                        }
-                        label="Protected Bike Trails"
-                    />
-                </FormGroup>
-            </Popover>
-        </div >
-    );
+      <Button
+        onClick={showUserLocation}
+        sx={{
+          width: "100px",
+          position: "absolute",
+          top: 195,
+          right: 5,
+          zIndex: 10,
+          bgcolor: "white",
+          color: "#7f7f7f",
+          boxShadow: 1,
+          textTransform: "none",
+          fontWeight: 500,
+          fontSize: "0.875rem",
+          "&:hover": {
+            bgcolor: "#ebebeb",
+          },
+        }}
+        title="Location"
+      >
+        <MyLocationIcon sx={{ mr: 1 }} />
+        Location
+      </Button>
+    </div>
+  );
 };
 
 export default MapComponent;
