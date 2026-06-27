@@ -46,7 +46,7 @@ const HomePage = () => {
           gardens={gardens}
         />
 
-        <Button
+        {/* <Button
           variant="contained"
           onClick={() => setIsRouteOpen(true)}
           sx={{
@@ -65,7 +65,7 @@ const HomePage = () => {
           }}
         >
           My Route
-        </Button>
+        </Button> */}
 
         <Button
           variant="contained"

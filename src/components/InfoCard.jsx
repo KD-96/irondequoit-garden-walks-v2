@@ -15,6 +15,7 @@ import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import Dialog from "@mui/material/Dialog";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
+import FullscreenIcon from "@mui/icons-material/Fullscreen";
 
 import { ref, listAll, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase/firebase.config";
@@ -189,10 +190,31 @@ const InfoCard = ({ garden, onClose }) => {
                       "&:hover": { bgcolor: "white" },
                     }}
                   >
-                    <ZoomInIcon />
+                    <FullscreenIcon />
                   </IconButton>
                 )}
 
+                <IconButton
+                  size="small"
+                  onClick={onClose}
+                  sx={{
+                    bgcolor: "rgba(255,255,255,.7)",
+                    "&:hover": { bgcolor: "white" },
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+              {/* <Box
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  left: 8,
+                  zIndex: 2,
+                  display: "flex",
+                  gap: 0.5,
+                }}
+              >
                 <IconButton
                   size="small"
                   onClick={toggleRoute}
@@ -207,18 +229,7 @@ const InfoCard = ({ garden, onClose }) => {
                     <FavoriteBorderIcon />
                   )}
                 </IconButton>
-
-                <IconButton
-                  size="small"
-                  onClick={onClose}
-                  sx={{
-                    bgcolor: "rgba(255,255,255,.7)",
-                    "&:hover": { bgcolor: "white" },
-                  }}
-                >
-                  <CloseIcon />
-                </IconButton>
-              </Box>
+              </Box> */}
             </CardContent>
           </Card>
         </motion.div>
