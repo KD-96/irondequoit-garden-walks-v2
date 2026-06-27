@@ -13,6 +13,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import { motion, AnimatePresence } from "framer-motion";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import Dialog from "@mui/material/Dialog";
+import ZoomInIcon from "@mui/icons-material/ZoomIn";
 
 import { ref, listAll, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase/firebase.config";
@@ -21,6 +23,8 @@ const InfoCard = ({ garden, onClose }) => {
   const [imageUrls, setImageUrls] = useState([]);
   const [loading, setLoading] = useState(true); // ⬅️ Add loading state
   const [isInRoute, setIsInRoute] = useState(false);
+
+  const [imageOpen, setImageOpen] = useState(false);
 
   useEffect(() => {
     if (!garden?.mapNumber) return;
@@ -85,21 +89,6 @@ const InfoCard = ({ garden, onClose }) => {
           className="info-card-wrapper"
         >
           <Card sx={{ width: 320, boxShadow: 3, position: "relative" }}>
-            <IconButton
-              size="small"
-              onClick={onClose}
-              sx={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                zIndex: 1,
-                bgcolor: "rgba(255, 255, 255, 0.6)",
-                "&:hover": { bgcolor: "rgba(255, 255, 255, 0.9)" },
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-
             {loading ? (
               <Box
                 sx={{
@@ -191,6 +180,19 @@ const InfoCard = ({ garden, onClose }) => {
                   gap: 0.5,
                 }}
               >
+                {imageUrls.length > 1 && (
+                  <IconButton
+                    size="small"
+                    onClick={() => setImageOpen(true)}
+                    sx={{
+                      bgcolor: "rgba(255,255,255,.7)",
+                      "&:hover": { bgcolor: "white" },
+                    }}
+                  >
+                    <ZoomInIcon />
+                  </IconButton>
+                )}
+
                 <IconButton
                   size="small"
                   onClick={toggleRoute}
@@ -221,6 +223,67 @@ const InfoCard = ({ garden, onClose }) => {
           </Card>
         </motion.div>
       )}
+
+      <Dialog
+        open={imageOpen}
+        onClose={() => setImageOpen(false)}
+        fullScreen
+        PaperProps={{
+          sx: {
+            bgcolor: "black",
+            boxShadow: 0,
+            overflow: "hidden",
+          },
+        }}
+      >
+        {/* Fixed close button */}
+        <IconButton
+          onClick={() => setImageOpen(false)}
+          sx={{
+            position: "fixed",
+            top: 16,
+            right: 16,
+            zIndex: 2000,
+            bgcolor: "rgba(0,0,0,.6)",
+            color: "white",
+            "&:hover": {
+              bgcolor: "rgba(0,0,0,.85)",
+            },
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+
+        {/* Scrollable image container */}
+        <Box
+          sx={{
+            width: "100vw",
+            height: "100vh",
+            overflow: "auto",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          {imageUrls.length > 0 && (
+            <img
+              src={imageUrls[0]}
+              alt={garden.name}
+              style={{
+                display: "block",
+
+                // Keep original resolution
+                width: "auto",
+                height: "auto",
+
+                // Never upscale
+                maxWidth: "none",
+                maxHeight: "none",
+              }}
+            />
+          )}
+        </Box>
+      </Dialog>
     </AnimatePresence>
   );
 };
